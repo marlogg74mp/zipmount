@@ -150,12 +150,11 @@ enum Command {
     Search {
         archive: PathBuf,
     },
-    #[cfg(windows)]
     ShellInstall {
+        #[cfg(windows)]
         #[arg(long)]
         modern: bool,
     },
-    #[cfg(windows)]
     ShellUninstall,
     Language {
         code: Option<String>,
@@ -271,13 +270,14 @@ const PLATFORM_HELP: &[(&str, &str, &str)] = &[
     ("unmount", "", "help-unmount-unix"),
     ("unmount", "target", "help-unmount-target-unix"),
     ("language", "code", "help-language-code-unix"),
+    ("shell-install", "", "help-shell-install-unix"),
 ];
 #[cfg(windows)]
 const PLATFORM_HELP: &[(&str, &str, &str)] = &[];
 
-/// Commands that exist only on Windows, though `HELP` lists them everywhere.
+/// Arguments that exist only on Windows, though `HELP` lists them everywhere.
 #[cfg(test)]
-const WINDOWS_ONLY: &[&str] = &["shell-install", "shell-uninstall"];
+const WINDOWS_ONLY: &[(&str, &str)] = &[("shell-install", "modern")];
 
 fn help_for(command: &str, arg: &str) -> Option<String> {
     fn find(
@@ -379,6 +379,12 @@ fn main() {
     // prefix it with an English "Error:" and list causes under "Caused by:".
     if let Err(e) = run() {
         eprintln!("{}: {e:#}", t!("error-prefix"));
+        // Started from a file manager's menu there is nobody to read stderr.
+        // (On Windows `report` has already shown a window.)
+        #[cfg(unix)]
+        if !has_console() {
+            unix::notify_error(&format!("{e:#}"));
+        }
         std::process::exit(1);
     }
 }
@@ -468,8 +474,9 @@ fn run() -> Result<()> {
         Command::Search { archive } => cmd_search(&archive),
         #[cfg(windows)]
         Command::ShellInstall { modern } => windows::cmd_shell_install(modern),
-        #[cfg(windows)]
-        Command::ShellUninstall => windows::cmd_shell_uninstall(),
+        #[cfg(unix)]
+        Command::ShellInstall {} => unix::cmd_shell_install(),
+        Command::ShellUninstall => platform::cmd_shell_uninstall(),
         Command::Language { code } => cmd_language(code.as_deref()),
         #[cfg(windows)]
         Command::ShellPackage { out, library } => {
@@ -937,9 +944,11 @@ fn has_console() -> bool {
         // SAFETY: no arguments; returns a window handle or null.
         unsafe { !GetConsoleWindow().is_null() }
     }
-    #[cfg(not(windows))]
+    #[cfg(unix)]
     {
-        true
+        // A menu item runs us with stderr going nowhere a person looks.
+        // SAFETY: isatty only inspects the descriptor.
+        unsafe { libc::isatty(libc::STDERR_FILENO) == 1 }
     }
 }
 
@@ -1191,7 +1200,7 @@ mod tests {
     fn help_table_names_only_real_commands_and_arguments() {
         let cli = Cli::command();
         for (command, arg, id) in HELP.iter().chain(PLATFORM_HELP) {
-            if *command == "*" || (cfg!(unix) && WINDOWS_ONLY.contains(command)) {
+            if *command == "*" || (cfg!(unix) && WINDOWS_ONLY.contains(&(*command, *arg))) {
                 continue;
             }
             let sub = cli

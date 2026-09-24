@@ -368,3 +368,15 @@ doctor-mount-unsupported-note =
 doctor-ready-unix =
     준비 완료. 아카이브 마운트:
         zipmount mount <archive.zip>
+
+## Linux와 macOS의 파일 관리자 메뉴
+
+menu-mount-unix = ZipMount로 마운트
+help-shell-install-unix = 파일 관리자의 상황에 맞는 메뉴에 "ZipMount로 마운트" 추가
+shell-installed-unix = 메뉴 항목을 설치했습니다:
+shell-installed-where-macos = Finder에서: 아카이브를 오른쪽 클릭 → 빠른 동작 → { menu-mount-unix }.
+shell-installed-where-linux =
+    GNOME 파일: 아카이브를 오른쪽 클릭 → 스크립트 → { menu-mount-unix }.
+    Dolphin(KDE): 아카이브를 오른쪽 클릭 → { menu-mount-unix }.
+    모든 파일 관리자: 다른 프로그램으로 열기 → { menu-mount-unix }.
+language-menu-updated-unix = 파일 관리자의 메뉴 항목을 이 언어로 다시 썼습니다.

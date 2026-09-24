@@ -392,3 +392,15 @@ doctor-mount-unsupported-note =
 doctor-ready-unix =
     Tudo pronto. Monte um arquivo compactado:
         zipmount mount <arquivo.zip>
+
+## Menu do gerenciador de arquivos no Linux e no macOS
+
+menu-mount-unix = Montar com o ZipMount
+help-shell-install-unix = Adicionar "Montar com o ZipMount" ao menu de contexto do gerenciador de arquivos
+shell-installed-unix = Itens de menu instalados:
+shell-installed-where-macos = No Finder: clique com o botão direito em um arquivo compactado → Ações Rápidas → { menu-mount-unix }.
+shell-installed-where-linux =
+    Arquivos do GNOME: botão direito em um arquivo compactado → Scripts → { menu-mount-unix }.
+    Dolphin (KDE): botão direito em um arquivo compactado → { menu-mount-unix }.
+    Qualquer gerenciador de arquivos: Abrir com → { menu-mount-unix }.
+language-menu-updated-unix = Os itens de menu do gerenciador de arquivos foram reescritos neste idioma.

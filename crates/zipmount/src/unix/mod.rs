@@ -10,6 +10,8 @@
 //! How the mount is made differs: FUSE on Linux (`linux`), a local NFS
 //! server on macOS (`macos`).
 
+mod menu;
+
 #[cfg(target_os = "linux")]
 mod linux;
 #[cfg(target_os = "linux")]
@@ -44,9 +46,68 @@ pub(crate) struct MountRecord {
     pub archive: PathBuf,
 }
 
-/// The menu is not there yet on Linux and macOS, so there is nothing to
-/// rewrite.
+/// Menu items carry their text in the language they were installed in;
+/// `zipmount language` writes them again.
 pub(crate) fn refresh_menu_texts(_language: &zipmount_i18n::Language) -> Result<()> {
+    if menu::is_installed() {
+        menu::install()?;
+        println!("{}", t!("language-menu-updated-unix"));
+    }
+    Ok(())
+}
+
+pub(crate) fn cmd_shell_install() -> Result<()> {
+    let written = menu::install()?;
+    println!("{}", t!("shell-installed-unix"));
+    for path in &written {
+        println!("  {}", path.display());
+    }
+    println!();
+    #[cfg(target_os = "macos")]
+    println!("{}", t!("shell-installed-where-macos"));
+    #[cfg(not(target_os = "macos"))]
+    println!("{}", t!("shell-installed-where-linux"));
+    println!("{}", t!("shell-remove-hint"));
+    Ok(())
+}
+
+/// Shows an error to someone who started us from a menu, with no terminal
+/// to read it in — what the message box does on Windows.
+pub(crate) fn notify_error(text: &str) {
+    #[cfg(target_os = "macos")]
+    let spawned = {
+        // An alert rather than a notification: notifications posted by
+        // osascript belong to Script Editor, and are often switched off.
+        let escaped = text.replace('\\', "\\\\").replace('"', "\\\"");
+        ProcCommand::new("osascript")
+            .args([
+                "-e",
+                &format!("display alert \"ZipMount\" message \"{escaped}\" as critical"),
+            ])
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+    };
+    #[cfg(not(target_os = "macos"))]
+    let spawned = ProcCommand::new("notify-send")
+        .args([
+            "--app-name=ZipMount",
+            "--icon=dialog-error",
+            "ZipMount",
+            text,
+        ])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn();
+    // Nothing more to be done if even that is missing.
+    let _ = spawned;
+}
+
+pub(crate) fn cmd_shell_uninstall() -> Result<()> {
+    menu::uninstall()?;
+    println!("{}", t!("shell-removed"));
     Ok(())
 }
 

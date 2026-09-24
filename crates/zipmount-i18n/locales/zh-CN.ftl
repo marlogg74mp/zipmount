@@ -365,3 +365,15 @@ doctor-mount-unsupported-note =
 doctor-ready-unix =
     一切就绪。挂载归档：
         zipmount mount <archive.zip>
+
+## Linux 和 macOS 上的文件管理器菜单
+
+menu-mount-unix = 用 ZipMount 挂载
+help-shell-install-unix = 将“用 ZipMount 挂载”添加到文件管理器的上下文菜单
+shell-installed-unix = 已安装菜单项：
+shell-installed-where-macos = 在访达中：右键点按归档 → 快速操作 → { menu-mount-unix }。
+shell-installed-where-linux =
+    GNOME 文件：右键点击归档 → 脚本 → { menu-mount-unix }。
+    Dolphin（KDE）：右键点击归档 → { menu-mount-unix }。
+    任何文件管理器：打开方式 → { menu-mount-unix }。
+language-menu-updated-unix = 文件管理器的菜单项已用此语言重写。

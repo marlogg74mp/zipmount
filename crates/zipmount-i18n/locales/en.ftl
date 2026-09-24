@@ -394,3 +394,15 @@ doctor-mount-unsupported-note =
 doctor-ready-unix =
     All set. Mount an archive:
         zipmount mount <archive.zip>
+
+## File manager menu on Linux and macOS
+
+menu-mount-unix = Mount with ZipMount
+help-shell-install-unix = Add "Mount with ZipMount" to the file manager's context menu
+shell-installed-unix = Menu items installed:
+shell-installed-where-macos = In Finder: right-click an archive → Quick Actions → { menu-mount-unix }.
+shell-installed-where-linux =
+    GNOME Files: right-click an archive → Scripts → { menu-mount-unix }.
+    Dolphin (KDE): right-click an archive → { menu-mount-unix }.
+    Any file manager: Open With → { menu-mount-unix }.
+language-menu-updated-unix = The file manager menu items were rewritten in this language.
