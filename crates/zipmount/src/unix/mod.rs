@@ -40,6 +40,11 @@ use crate::{
     human, open_archive, print_table, read_password, report, source_text, ArchiveArgs, MountArgs,
 };
 
+/// Set for the background copy started by `mount --detach`: its errors are
+/// reported by the process that started it, which has the terminal or shows
+/// the one message.
+pub(crate) const DETACHED_VAR: &str = "ZIPMOUNT_DETACHED";
+
 /// A mounted archive, as the system lists it.
 pub(crate) struct MountRecord {
     pub mountpoint: PathBuf,
@@ -295,12 +300,26 @@ fn spawn_detached(
         None => None,
     };
 
+    // The child's errors go to a file of its own, only this user can read:
+    // if it fails, the reason is there, and this process reports it. A pipe
+    // would do until the child outlives us, and then its next write would
+    // kill it.
+    let log_path = std::env::temp_dir().join(format!("zipmount-err-{}.txt", std::process::id()));
+    let log = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .mode(0o600)
+        .open(&log_path)
+        .context("cannot start the background process")?;
+
     // A process group of its own: Ctrl+C in this terminal, or closing it,
     // must not reach the background mount.
     let mut child = command
+        .env(DETACHED_VAR, "1")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stderr(log)
         .process_group(0)
         .spawn()
         .context("cannot start the background process")?;
@@ -324,12 +343,24 @@ fn spawn_detached(
         let _ = std::fs::remove_file(path);
     }
 
+    let child_said = std::fs::read_to_string(&log_path).unwrap_or_default();
+    let _ = std::fs::remove_file(&log_path);
+
     if !mounted {
         remove_if_ours(mountpoint);
-        return report(Err(anyhow::anyhow!(t!(
-            "err-mount-failed-detached",
-            path = archive.display().to_string()
-        ))));
+        // The child's own words carry the reason; they start with the same
+        // "Error: " this process is about to print.
+        let prefix = format!("{}: ", t!("error-prefix"));
+        let reason = child_said.trim();
+        let reason = reason.strip_prefix(&prefix).unwrap_or(reason);
+        return report(Err(if reason.is_empty() {
+            anyhow::anyhow!(t!(
+                "err-mount-failed-detached",
+                path = archive.display().to_string()
+            ))
+        } else {
+            anyhow::anyhow!("{reason}")
+        }));
     }
 
     println!(

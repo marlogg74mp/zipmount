@@ -283,8 +283,10 @@ mod platform {
             label = xml_escape(label)
         );
 
+        // `|| true`: zipmount shows its own error; a failing script would
+        // make Automator add a second, vaguer dialog.
         let script = format!(
-            "for f in \"$@\"; do\n\t{} mount --detach --open \"$f\"\ndone",
+            "for f in \"$@\"; do\n\t{} mount --detach --open \"$f\" || true\ndone",
             shell_quote(program)
         );
         let workflow = format!(

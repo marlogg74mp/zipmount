@@ -382,7 +382,7 @@ fn main() {
         // Started from a file manager's menu there is nobody to read stderr.
         // (On Windows `report` has already shown a window.)
         #[cfg(unix)]
-        if !has_console() {
+        if !has_console() && std::env::var_os(unix::DETACHED_VAR).is_none() {
             unix::notify_error(&format!("{e:#}"));
         }
         std::process::exit(1);
