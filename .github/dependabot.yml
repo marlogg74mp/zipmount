@@ -10,6 +10,12 @@ updates:
       # bindgen); a new version means refreshing vendor/winfsp-sys by hand.
       - dependency-name: winfsp
       - dependency-name: winfsp-sys
+      # windows and windows-core follow the version winfsp uses: moving ahead
+      # of it only builds a second copy of the crate. Patch releases are fine.
+      - dependency-name: windows
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: windows-core
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   - package-ecosystem: github-actions
     directory: /
