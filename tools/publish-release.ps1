@@ -93,10 +93,12 @@ foreach ($item in $artifacts) {
     Copy-Item $item.Path $item.Staged
 }
 
-# The same line format sha256sum -c understands.
+# The same line format sha256sum -c understands, with LF line ends:
+# Set-Content would write CRLF, and sha256sum then looks for a file whose name
+# ends in a carriage return.
 $sumsFile = Join-Path $staging "SHA256SUMS.txt"
-$sums = $artifacts | ForEach-Object { "{0}  {1}" -f $_.Hash.ToLower(), $_.Published }
-Set-Content -Path $sumsFile -Value $sums -Encoding Ascii
+$sums = $artifacts | ForEach-Object { "{0}  {1}`n" -f $_.Hash.ToLower(), $_.Published }
+[IO.File]::WriteAllText($sumsFile, -join $sums, [Text.Encoding]::ASCII)
 
 $exe = $artifacts[0]
 $msi = $artifacts[1]
