@@ -1,4 +1,8 @@
 fn main() {
+    // Elsewhere the crate is empty, and the linker there knows no /DEF.
+    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("windows") {
+        return;
+    }
     // The linker warns (LNK4104) that COM entry points must not go into the
     // import library: nobody should link against the DLL directly, COM loads
     // it itself. They are marked PRIVATE.

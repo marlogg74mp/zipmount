@@ -36,6 +36,16 @@ is what makes a built `zipmount.exe` a GPLv3 work.
 | [grep-searcher, grep-regex](https://github.com/BurntSushi/ripgrep) | content search | Unlicense OR MIT |
 | [fluent-bundle, unic-langid](https://github.com/projectfluent/fluent-rs) | translations | Apache-2.0 OR MIT |
 
+## Linux
+
+| Component | Used for | License |
+|---|---|---|
+| [fuser](https://github.com/cberner/fuser) | mounting through FUSE | MIT |
+| [libc](https://github.com/rust-lang/libc) | user and group ids, signals | MIT OR Apache-2.0 |
+
+FUSE itself is part of the Linux kernel; mounting uses the system's
+`fusermount3` helper, which is not bundled.
+
 ## RAR (not in official builds)
 
 RAR support uses RARLAB's UnRAR source code through the

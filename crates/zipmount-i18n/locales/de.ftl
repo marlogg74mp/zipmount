@@ -354,3 +354,38 @@ doctor-reason = Grund: { $error }
 doctor-no-winfsp-note =
     Durchsuchen und Entnehmen (ls, find, grep, verify) funktionieren auch ohne
     WinFsp — der Treiber wird nur zum Einhängen eines Laufwerks gebraucht.
+
+## Linux und macOS: keine Laufwerksbuchstaben, kein Datei-Explorer
+
+help-about-unix = Ein Archiv als Ordner: durchsuchen und entnehmen ohne Entpacken
+help-notice-unix = Lizenz GPL-3.0-or-later, Quellcode: https://github.com/marlogg74mp/zipmount
+help-prefix-unix = Pfadpräfix in der Ausgabe, zum Beispiel "/home/me/ZipMount/logs/"
+help-mount-mountpoint-unix = Ein leeres Verzeichnis zum Einhängen; ohne Angabe ~/ZipMount/<Archivname>
+help-mount-open-unix = Den eingehängten Ordner im Dateimanager öffnen
+help-unmount-unix = Ein Archiv aushängen
+help-unmount-target-unix = Das Einhängeverzeichnis oder der Pfad zum Archiv
+help-language-code-unix = Sprachcode (en, ru, zh-CN, ja, ko, pt-BR, es, de) oder auto, um dem System zu folgen
+language-source-system = die Sprache des Systems
+language-hint-unix = Wählen: zipmount language <Code>. Wieder dem System folgen: zipmount language auto
+language-follows-system = Die Sprache folgt wieder dem System: { $name } ({ $code }).
+err-language-unknown-unix = unbekannte Sprache „{ $code }“. Verfügbar: { $available }; oder auto, um dem System zu folgen
+mount-err-fuse = kann nicht in { $mountpoint } einhängen: { $error }
+err-no-fuse = FUSE ist hier nicht verfügbar: { $missing } fehlt. Installieren Sie das Paket fuse3, zum Beispiel:  sudo apt install fuse3
+err-mountpoint-not-dir = { $path } ist kein Verzeichnis
+err-mountpoint-not-empty = { $path } ist nicht leer; hängen Sie in ein leeres Verzeichnis ein
+err-unmount-failed = kann { $target } nicht aushängen: { $error }
+err-mount-unsupported = Einhängen ist auf diesem System noch nicht verfügbar
+doctor-fuse = FUSE:
+doctor-fuse-ok = verfügbar (/dev/fuse, fusermount3)
+doctor-fuse-note =
+    Durchsuchen und Entnehmen (ls, find, grep, verify) funktionieren auch ohne
+    FUSE — es wird nur zum Einhängen gebraucht. Installieren mit dem
+    Paketmanager: sudo apt install fuse3 (Debian, Ubuntu), sudo dnf install fuse3
+    (Fedora), sudo pacman -S fuse3 (Arch).
+doctor-mount = Einhängen:
+doctor-mount-unsupported-note =
+    Durchsuchen und Entnehmen (ls, find, grep, verify) funktionieren auf diesem
+    System; Einhängen ist hier noch nicht verfügbar.
+doctor-ready-unix =
+    Alles bereit. Ein Archiv einhängen:
+        zipmount mount <archiv.zip>

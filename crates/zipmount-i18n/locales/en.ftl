@@ -356,3 +356,38 @@ doctor-reason = Reason: { $error }
 doctor-no-winfsp-note =
     Browsing, search and extraction (ls, find, grep, verify) work without
     WinFsp too — the driver is only needed for mounting a drive.
+
+## Linux and macOS: no drive letters, no File Explorer
+
+help-about-unix = An archive as a folder: browse, search and extract without unpacking
+help-notice-unix = License GPL-3.0-or-later, source: https://github.com/marlogg74mp/zipmount
+help-prefix-unix = Path prefix in the output, for example "/home/me/ZipMount/logs/"
+help-mount-mountpoint-unix = An empty directory to mount on; ~/ZipMount/<archive name> if omitted
+help-mount-open-unix = Open the mounted folder in the file manager
+help-unmount-unix = Unmount an archive
+help-unmount-target-unix = The mount directory or the path to the archive
+help-language-code-unix = Language code (en, ru, zh-CN, ja, ko, pt-BR, es, de), or auto to follow the system
+language-source-system = the system locale
+language-hint-unix = Choose one: zipmount language <code>. Follow the system again: zipmount language auto
+language-follows-system = The language follows the system again: { $name } ({ $code }).
+err-language-unknown-unix = unknown language "{ $code }". Available: { $available }; or auto to follow the system
+mount-err-fuse = cannot mount on { $mountpoint }: { $error }
+err-no-fuse = FUSE is not available here: { $missing } is missing. Install the fuse3 package, for example:  sudo apt install fuse3
+err-mountpoint-not-dir = { $path } is not a directory
+err-mountpoint-not-empty = { $path } is not empty; mount on an empty directory
+err-unmount-failed = cannot unmount { $target }: { $error }
+err-mount-unsupported = mounting is not available on this system yet
+doctor-fuse = FUSE:
+doctor-fuse-ok = available (/dev/fuse, fusermount3)
+doctor-fuse-note =
+    Browsing, search and extraction (ls, find, grep, verify) work without
+    FUSE too — it is only needed for mounting. Install it with the package
+    manager: sudo apt install fuse3 (Debian, Ubuntu), sudo dnf install fuse3
+    (Fedora), sudo pacman -S fuse3 (Arch).
+doctor-mount = Mounting:
+doctor-mount-unsupported-note =
+    Browsing, search and extraction (ls, find, grep, verify) work on this
+    system; mounting is not available here yet.
+doctor-ready-unix =
+    All set. Mount an archive:
+        zipmount mount <archive.zip>

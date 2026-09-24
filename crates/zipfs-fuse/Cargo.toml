@@ -1,0 +1,13 @@
+[package]
+name = "zipfs-fuse"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# FUSE on Linux; elsewhere this crate compiles to nothing.
+[target.'cfg(target_os = "linux")'.dependencies]
+zipfs-core.workspace = true
+zipmount-i18n.workspace = true
+anyhow.workspace = true
+fuser.workspace = true
+libc.workspace = true

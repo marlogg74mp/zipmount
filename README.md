@@ -9,7 +9,8 @@
 
 Take **`ZipMount-Setup-<version>.exe`** from the release page and run it —
 WinFsp comes inside. 64-bit Windows 10 (version 2004 or later) or Windows 11.
-More in [Installation](#installation) · [website](https://marlogg74mp.github.io/zipmount/)
+More in [Installation](#installation) · [website](https://marlogg74mp.github.io/zipmount/) ·
+on Linux, [build it from source](#linux)
 
 ![ZipMount](docs/hero.jpg)
 
@@ -103,6 +104,29 @@ winget install Microsoft.WindowsSDK.10.0.26100
 The build does not require LLVM: the vendored copy of `winfsp-sys` in `vendor/`
 uses pre-generated bindings instead of running bindgen (see the comments in its
 `build.rs`).
+
+### Linux
+
+No package yet: build it from source. Mounting goes through FUSE, which every
+mainstream distribution ships as `fuse3` — the `/dev/fuse` device and the
+`fusermount3` helper. The build itself needs nothing but Rust: no libfuse, no
+`-dev` packages.
+
+```
+sudo apt install fuse3            # Debian, Ubuntu; dnf or pacman elsewhere
+cargo build --release
+./target/release/zipmount mount archive.7z
+```
+
+Without a directory the archive is mounted on `~/ZipMount/<archive name>`,
+created for the mount and removed after it; file managers show a mount in the
+home folder in their sidebar. `zipmount unmount`, `fusermount3 -u` or Ctrl+C in
+the terminal that mounted it all take it down cleanly. `zipmount mounts` reads
+the kernel's own list, so nothing goes stale when a process is killed. The
+archive commands (`ls`, `find`, `grep`, `info`, `verify`) work exactly as on
+Windows, with or without FUSE. No file manager menu yet.
+
+On macOS the archive commands build and work too; mounting is the next step.
 
 ### Building the installers
 
@@ -217,8 +241,12 @@ The language is decided in this order:
 
 1. `ZIPMOUNT_LANG` — for one command or one console session;
 2. the choice saved with `zipmount language <code>`, kept in
-   `HKCU\Software\ZipMount\Language`;
-3. the Windows display language, following the user's order of preference;
+   `HKCU\Software\ZipMount\Language` (on Linux in
+   `~/.config/zipmount/language`, on macOS in
+   `~/Library/Application Support/ZipMount/language`);
+3. the Windows display language, following the user's order of preference (on
+   Linux and macOS the locale: `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`, `LANG`,
+   and then macOS's own list of preferred languages);
 4. English.
 
 ```
@@ -609,10 +637,13 @@ crates/zipfs-core/    archive parsing, tree, reading, search — no WinFsp
   deflate_index.rs    checkpoint index (zran) for reading deflate backwards
   reader.rs           read paths, search.rs / verify.rs — search and verification
 crates/zipfs-mount/   the WinFsp layer (FileSystemContext implementation)
-crates/zipmount/      CLI
-  mounts.rs           mount bookkeeping, background launch, stopping
-  shell.rs            context menu items via the registry
-  modern.rs           building, signing and installing the package for the main menu
+crates/zipmount/      CLI; main.rs — the commands that are the same everywhere
+  windows/            mounting through WinFsp, drive letters, the File Explorer menu
+    mounts.rs         mount bookkeeping, background launch, stopping
+    shell.rs          context menu items via the registry
+    modern.rs         building, signing and installing the package for the main menu
+  unix/               mounting on a directory; linux.rs — FUSE, the kernel's list of mounts
+crates/zipfs-fuse/    the FUSE layer (Linux)
 crates/zipmount-shell/  the IExplorerCommand COM handler (loaded by File Explorer)
 crates/zipmount-i18n/ language choice and every user-facing text
   locales/*.ftl       the translations, one Fluent file per language

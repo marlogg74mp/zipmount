@@ -11,7 +11,8 @@ license.workspace = true
 name = "zipmount_shell"
 crate-type = ["cdylib", "rlib"]
 
-[dependencies]
+# A File Explorer handler: on other systems this crate compiles to nothing.
+[target.'cfg(windows)'.dependencies]
 zipmount-i18n.workspace = true
 windows.workspace = true
 windows-core.workspace = true

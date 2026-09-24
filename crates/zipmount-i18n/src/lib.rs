@@ -85,7 +85,9 @@ pub const LANGUAGES: &[Language] = &[
 /// The environment variable that overrides everything else.
 pub const LANG_VAR: &str = "ZIPMOUNT_LANG";
 
-/// Where the saved choice lives, under `HKEY_CURRENT_USER`.
+/// Where the saved choice lives: a key under `HKEY_CURRENT_USER` on Windows;
+/// elsewhere its last part names a directory in the user's configuration
+/// directory, and the value a file in it.
 pub const SETTINGS_KEY: &str = "Software\\ZipMount";
 const LANGUAGE_VALUE: &str = "Language";
 
@@ -96,7 +98,8 @@ pub enum Source {
     Environment,
     /// `zipmount language <code>`.
     Saved,
-    /// The Windows display language.
+    /// The system's language: the Windows display language, or the locale
+    /// on Linux and macOS.
     Windows,
     /// Nothing matched; English.
     Default,
@@ -460,17 +463,108 @@ mod platform {
 
 #[cfg(not(windows))]
 mod platform {
+    use std::path::PathBuf;
+
+    /// The user's languages, most preferred first, the way gettext looks for
+    /// them: `LANGUAGE` (a colon-separated list), then `LC_ALL`,
+    /// `LC_MESSAGES` and `LANG`. On macOS a program started from Finder
+    /// often has none of these, so the system's list comes last.
     pub fn preferred_ui_languages() -> Vec<String> {
-        std::env::var("LANG").into_iter().collect()
+        let mut tags: Vec<String> = Vec::new();
+        for var in ["LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"] {
+            let Ok(value) = std::env::var(var) else {
+                continue;
+            };
+            tags.extend(value.split(':').filter_map(locale_to_tag));
+            // gettext stops at the first of the three that is set.
+            if var != "LANGUAGE" && !value.is_empty() {
+                break;
+            }
+        }
+        #[cfg(target_os = "macos")]
+        tags.extend(apple_languages());
+        tags
     }
-    pub fn read_setting(_: &str, _: &str) -> Option<String> {
-        None
+
+    /// "ru_RU.UTF-8" or "de_DE@euro" → "ru_RU", "de_DE"; nothing for the
+    /// "C" and "POSIX" locales, which name no language.
+    fn locale_to_tag(locale: &str) -> Option<String> {
+        let tag = locale.split(['.', '@']).next()?.trim();
+        (!tag.is_empty() && tag != "C" && tag != "POSIX").then(|| tag.to_string())
     }
-    pub fn write_setting(_: &str, _: &str, _: &str) -> std::io::Result<()> {
-        Err(std::io::ErrorKind::Unsupported.into())
+
+    /// The languages from System Settings, from `defaults read -g
+    /// AppleLanguages`: `( "ru-RU", "en-US" )`.
+    #[cfg(target_os = "macos")]
+    fn apple_languages() -> Vec<String> {
+        let Ok(output) = std::process::Command::new("defaults")
+            .args(["read", "-g", "AppleLanguages"])
+            .output()
+        else {
+            return Vec::new();
+        };
+        String::from_utf8_lossy(&output.stdout)
+            .split(['(', ')', ',', '\n'])
+            .map(|s| s.trim().trim_matches('"').to_string())
+            .filter(|s| !s.is_empty())
+            .collect()
     }
-    pub fn delete_setting(_: &str, _: &str) -> std::io::Result<()> {
-        Ok(())
+
+    /// `~/.config/zipmount/<value>` on Linux (or under `XDG_CONFIG_HOME`),
+    /// `~/Library/Application Support/ZipMount/<value>` on macOS.
+    fn setting_path(key: &str, value: &str) -> Option<PathBuf> {
+        let home = std::env::var_os("HOME").map(PathBuf::from);
+        let name = key.rsplit('\\').next().unwrap_or(key);
+        let dir = if cfg!(target_os = "macos") {
+            home?.join("Library/Application Support").join(name)
+        } else {
+            let config = std::env::var_os("XDG_CONFIG_HOME")
+                .map(PathBuf::from)
+                .filter(|p| p.is_absolute())
+                .or_else(|| home.map(|h| h.join(".config")))?;
+            config.join(name.to_lowercase())
+        };
+        Some(dir.join(value.to_lowercase()))
+    }
+
+    pub fn read_setting(key: &str, value: &str) -> Option<String> {
+        let text = std::fs::read_to_string(setting_path(key, value)?).ok()?;
+        let text = text.trim();
+        (!text.is_empty()).then(|| text.to_string())
+    }
+
+    pub fn write_setting(key: &str, value: &str, data: &str) -> std::io::Result<()> {
+        let path = setting_path(key, value).ok_or(std::io::ErrorKind::NotFound)?;
+        if let Some(dir) = path.parent() {
+            std::fs::create_dir_all(dir)?;
+        }
+        std::fs::write(path, format!("{data}\n"))
+    }
+
+    pub fn delete_setting(key: &str, value: &str) -> std::io::Result<()> {
+        let Some(path) = setting_path(key, value) else {
+            return Ok(());
+        };
+        match std::fs::remove_file(path) {
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => Err(e),
+            // Nothing saved is exactly the state asked for.
+            _ => Ok(()),
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::locale_to_tag;
+
+        #[test]
+        fn locales_become_tags() {
+            assert_eq!(locale_to_tag("ru_RU.UTF-8").as_deref(), Some("ru_RU"));
+            assert_eq!(locale_to_tag("de_DE@euro").as_deref(), Some("de_DE"));
+            assert_eq!(locale_to_tag("ja").as_deref(), Some("ja"));
+            assert_eq!(locale_to_tag("C.UTF-8"), None);
+            assert_eq!(locale_to_tag("POSIX"), None);
+            assert_eq!(locale_to_tag(""), None);
+        }
     }
 }
 
