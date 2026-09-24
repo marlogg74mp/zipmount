@@ -45,6 +45,10 @@ use crate::{
 /// the one message.
 pub(crate) const DETACHED_VAR: &str = "ZIPMOUNT_DETACHED";
 
+/// Set by the menu items: errors are shown in a dialog or notification, as
+/// nobody reads the output of a program started from a file manager.
+pub(crate) const NOTIFY_VAR: &str = "ZIPMOUNT_NOTIFY";
+
 /// A mounted archive, as the system lists it.
 pub(crate) struct MountRecord {
     pub mountpoint: PathBuf,

@@ -18,6 +18,8 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use zipmount_i18n::t;
 
+use super::NOTIFY_VAR;
+
 /// MIME types of the archives we open (Linux).
 #[cfg(target_os = "linux")]
 const MIME_TYPES: &[&str] = &[
@@ -142,7 +144,10 @@ mod platform {
     }
 
     pub(super) fn install(home: &Path, program: &Path, label: &str) -> Result<Vec<PathBuf>> {
-        let exec = format!("{} mount --detach --open %f", desktop_quote(program));
+        let exec = format!(
+            "env {NOTIFY_VAR}=1 {} mount --detach --open %f",
+            desktop_quote(program)
+        );
         let mimes = MIME_TYPES.join(";") + ";";
         let mut written = Vec::new();
 
@@ -186,7 +191,7 @@ mod platform {
         write(
             &script,
             &format!(
-                "#!/bin/sh\n# {MARK}\nfor f in \"$@\"; do\n    {} mount --detach --open \"$f\"\ndone\n",
+                "#!/bin/sh\n# {MARK}\nexport {NOTIFY_VAR}=1\nfor f in \"$@\"; do\n    {} mount --detach --open \"$f\"\ndone\n",
                 shell_quote(program)
             ),
             true,
@@ -286,7 +291,7 @@ mod platform {
         // `|| true`: zipmount shows its own error; a failing script would
         // make Automator add a second, vaguer dialog.
         let script = format!(
-            "for f in \"$@\"; do\n\t{} mount --detach --open \"$f\" || true\ndone",
+            "export {NOTIFY_VAR}=1\nfor f in \"$@\"; do\n\t{} mount --detach --open \"$f\" || true\ndone",
             shell_quote(program)
         );
         let workflow = format!(
@@ -521,7 +526,9 @@ mod tests {
         assert_eq!(platform::installed(&home).len(), 4);
 
         let app = std::fs::read_to_string(&written[0]).unwrap();
-        assert!(app.contains("Exec=\"/opt/zip mount/zipmount\" mount --detach --open %f"));
+        assert!(app.contains(
+            "Exec=env ZIPMOUNT_NOTIFY=1 \"/opt/zip mount/zipmount\" mount --detach --open %f"
+        ));
         assert!(app.contains("MimeType=application/zip;"));
         let script = std::fs::read_to_string(&written[3]).unwrap();
         assert!(script.contains("'/opt/zip mount/zipmount' mount --detach --open \"$f\""));

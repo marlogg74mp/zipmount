@@ -382,7 +382,9 @@ fn main() {
         // Started from a file manager's menu there is nobody to read stderr.
         // (On Windows `report` has already shown a window.)
         #[cfg(unix)]
-        if !has_console() && std::env::var_os(unix::DETACHED_VAR).is_none() {
+        if std::env::var_os(unix::NOTIFY_VAR).is_some()
+            && std::env::var_os(unix::DETACHED_VAR).is_none()
+        {
             unix::notify_error(&format!("{e:#}"));
         }
         std::process::exit(1);
@@ -944,11 +946,12 @@ fn has_console() -> bool {
         // SAFETY: no arguments; returns a window handle or null.
         unsafe { !GetConsoleWindow().is_null() }
     }
+    // On Linux and macOS a menu item says so itself (`NOTIFY_VAR`): having
+    // no terminal proves nothing there — scripts, cron and ssh have none
+    // either, and must not get dialogs.
     #[cfg(unix)]
     {
-        // A menu item runs us with stderr going nowhere a person looks.
-        // SAFETY: isatty only inspects the descriptor.
-        unsafe { libc::isatty(libc::STDERR_FILENO) == 1 }
+        true
     }
 }
 
