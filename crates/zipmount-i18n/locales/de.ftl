@@ -374,6 +374,7 @@ err-no-fuse = FUSE ist hier nicht verfügbar: { $missing } fehlt. Installieren S
 err-mountpoint-not-dir = { $path } ist kein Verzeichnis
 err-mountpoint-not-empty = { $path } ist nicht leer; hängen Sie in ein leeres Verzeichnis ein
 err-unmount-failed = kann { $target } nicht aushängen: { $error }
+err-unmount-in-use = kann { $target } nicht aushängen: Dateien darauf sind in { $programs } geöffnet. Schließen Sie sie und versuchen Sie es erneut
 err-mount-unsupported = Einhängen ist auf diesem System noch nicht verfügbar
 doctor-fuse = FUSE:
 doctor-fuse-ok = verfügbar (/dev/fuse, fusermount3)

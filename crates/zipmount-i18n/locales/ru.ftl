@@ -382,6 +382,7 @@ err-no-fuse = FUSE здесь недоступен: нет { $missing }. Уст�
 err-mountpoint-not-dir = { $path } — не каталог
 err-mountpoint-not-empty = { $path } не пуст; монтировать можно только в пустой каталог
 err-unmount-failed = не удалось размонтировать { $target }: { $error }
+err-unmount-in-use = не удалось размонтировать { $target }: файлы на нём открыты в { $programs }. Закройте их и повторите
 err-mount-unsupported = монтирование на этой системе пока недоступно
 doctor-fuse = FUSE:
 doctor-fuse-ok = доступен (/dev/fuse, fusermount3)

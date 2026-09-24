@@ -348,6 +348,7 @@ err-no-fuse = 此处无法使用 FUSE：缺少 { $missing }。请安装 fuse3 �
 err-mountpoint-not-dir = { $path } 不是目录
 err-mountpoint-not-empty = { $path } 不是空目录；只能挂载到空目录
 err-unmount-failed = 无法卸载 { $target }：{ $error }
+err-unmount-in-use = 无法卸载 { $target }：其中的文件正被 { $programs } 打开。请关闭后重试
 err-mount-unsupported = 此系统暂不支持挂载
 doctor-fuse = FUSE：
 doctor-fuse-ok = 可用（/dev/fuse、fusermount3）

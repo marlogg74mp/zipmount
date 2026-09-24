@@ -374,6 +374,7 @@ err-no-fuse = O FUSE não está disponível aqui: falta { $missing }. Instale o 
 err-mountpoint-not-dir = { $path } não é um diretório
 err-mountpoint-not-empty = { $path } não está vazio; monte em um diretório vazio
 err-unmount-failed = não foi possível desmontar { $target }: { $error }
+err-unmount-in-use = não foi possível desmontar { $target }: há arquivos abertos em { $programs }. Feche-os e tente de novo
 err-mount-unsupported = a montagem ainda não está disponível neste sistema
 doctor-fuse = FUSE:
 doctor-fuse-ok = disponível (/dev/fuse, fusermount3)

@@ -350,6 +350,7 @@ err-no-fuse = 여기서는 FUSE를 사용할 수 없습니다: { $missing }이(�
 err-mountpoint-not-dir = { $path }은(는) 디렉터리가 아닙니다
 err-mountpoint-not-empty = { $path }이(가) 비어 있지 않습니다. 빈 디렉터리에 마운트하세요
 err-unmount-failed = { $target }을(를) 마운트 해제할 수 없습니다: { $error }
+err-unmount-in-use = { $target }을(를) 마운트 해제할 수 없습니다: { $programs }에서 파일이 열려 있습니다. 닫은 후 다시 시도하세요
 err-mount-unsupported = 이 시스템에서는 아직 마운트를 사용할 수 없습니다
 doctor-fuse = FUSE:
 doctor-fuse-ok = 사용 가능(/dev/fuse, fusermount3)

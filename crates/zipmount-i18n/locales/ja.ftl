@@ -350,6 +350,7 @@ err-no-fuse = ここでは FUSE を使用できません：{ $missing } があ�
 err-mountpoint-not-dir = { $path } はディレクトリではありません
 err-mountpoint-not-empty = { $path } は空ではありません。空のディレクトリにマウントしてください
 err-unmount-failed = { $target } をアンマウントできません：{ $error }
+err-unmount-in-use = { $target } をアンマウントできません：{ $programs } がファイルを開いています。閉じてから再試行してください
 err-mount-unsupported = このシステムではまだマウントできません
 doctor-fuse = FUSE：
 doctor-fuse-ok = 使用可能（/dev/fuse、fusermount3）

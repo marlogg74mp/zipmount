@@ -73,34 +73,29 @@ pub(crate) fn unmount(mountpoint: &Path) -> Result<()> {
             .context("cannot run umount")
     };
 
-    // Right after a program finishes reading, the NFS client holds on to
-    // the file for a moment, and umount answers "Resource busy"; give that
-    // moment five seconds to pass.
+    // "Resource busy" comes in two kinds. One of the user's programs may
+    // have a file open there: give it five seconds to close, then name it
+    // and leave the volume alone. Or no program has: the NFS client itself
+    // holds files it just read for a while, and system services look a new
+    // volume over (neither shows in the user's lsof). Forcing is safe then —
+    // the volume is read-only, so nothing unwritten can be lost.
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
-    let mut output = loop {
-        let output = umount(false)?;
-        if output.status.success() || std::time::Instant::now() > deadline {
-            break output;
-        }
-        std::thread::sleep(std::time::Duration::from_millis(250));
-    };
-
-    // Still busy. If one of the user's programs has a file open there, say
-    // which and leave it be. If none has, what holds the volume is a system
-    // service looking it over (Spotlight and the like, which lsof does not
-    // show to a user): forcing is safe then — the volume is read-only, so
-    // nothing unwritten can be lost.
-    if !output.status.success() {
+    let mut output = umount(false)?;
+    while !output.status.success() {
         let users = processes_using(mountpoint);
         if users.is_empty() {
             output = umount(true)?;
-        } else {
+            break;
+        }
+        if std::time::Instant::now() > deadline {
             anyhow::bail!(t!(
-                "err-unmount-failed",
+                "err-unmount-in-use",
                 target = mountpoint.display().to_string(),
-                error = users.join(", ")
+                programs = users.join(", ")
             ));
         }
+        std::thread::sleep(std::time::Duration::from_millis(250));
+        output = umount(false)?;
     }
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
