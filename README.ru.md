@@ -1,8 +1,15 @@
 # ZipMount
 
+[![Latest release](https://img.shields.io/github/v/release/marlogg74mp/zipmount?label=download)](https://github.com/marlogg74mp/zipmount/releases/latest)
 [![CI](https://github.com/marlogg74mp/zipmount/actions/workflows/ci.yml/badge.svg)](https://github.com/marlogg74mp/zipmount/actions/workflows/ci.yml)
 
 *[English version](README.md)*
+
+### [⬇ Скачать ZipMount для Windows](https://github.com/marlogg74mp/zipmount/releases/latest)
+
+Возьмите на странице выпуска **`ZipMount-Setup-<версия>.exe`** и запустите —
+WinFsp уже внутри. 64-битная Windows 10 (версия 2004 или новее) или Windows 11.
+Подробнее — в разделе [Установка](#установка) · [сайт](https://marlogg74mp.github.io/zipmount/)
 
 ![ZipMount](docs/hero.jpg)
 
@@ -603,7 +610,8 @@ crates/zipmount-i18n/ выбор языка и все тексты, которы
   locales/*.ftl       переводы, по файлу Fluent на язык
 vendor/winfsp-sys/    патч: готовые биндинги вместо bindgen
 tools/                сборка значка, генератор тестовых архивов, сборка установщиков
-docs/                 заставка для README
+docs/                 заставка и значок для README
+site/                 сайт (GitHub Pages), одна статическая страница
 installer/            описания для WiX: пакет и связка
   locales/<код>/      тексты окна установщика и страница, которую оно показывает
 ```
