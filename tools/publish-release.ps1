@@ -16,11 +16,18 @@
 # -WhatIf prints what would be published, and the SHA256 of each file, without
 # touching anything. Publishing the hashes is worth it while the installer is
 # not code-signed.
+#
+# -StageOnly checks the version and copies the installers under their
+# published names into target\release-<version>, and stops there: the release
+# workflow does so, and makes one release of them with the Linux and macOS
+# builds. Run by hand without it, the script publishes the Windows installers
+# alone.
 
 [CmdletBinding()]
 param(
     [string] $Repository = "marlogg74mp/zipmount",
-    [switch] $WhatIf
+    [switch] $WhatIf,
+    [switch] $StageOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -81,7 +88,7 @@ if ($WhatIf) {
     return
 }
 
-if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+if (-not $StageOnly -and -not (Get-Command gh -ErrorAction SilentlyContinue)) {
     throw "no GitHub CLI - winget install GitHub.cli, then gh auth login"
 }
 
@@ -91,6 +98,12 @@ New-Item -ItemType Directory $staging | Out-Null
 foreach ($item in $artifacts) {
     $item.Staged = Join-Path $staging $item.Published
     Copy-Item $item.Path $item.Staged
+}
+
+if ($StageOnly) {
+    Write-Host ""
+    Write-Host "Staged in $staging"
+    return
 }
 
 # The same line format sha256sum -c understands, with LF line ends:

@@ -1789,7 +1789,7 @@ dependencies = [
 
 [[package]]
 name = "zipfs-core"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "aes",
  "anyhow",
@@ -1816,7 +1816,7 @@ dependencies = [
 
 [[package]]
 name = "zipfs-fuse"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "fuser",
@@ -1827,7 +1827,7 @@ dependencies = [
 
 [[package]]
 name = "zipfs-mount"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "widestring",
@@ -1840,7 +1840,7 @@ dependencies = [
 
 [[package]]
 name = "zipfs-nfs"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1853,7 +1853,7 @@ dependencies = [
 
 [[package]]
 name = "zipmount"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -1873,7 +1873,7 @@ dependencies = [
 
 [[package]]
 name = "zipmount-i18n"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "fluent-bundle",
  "fluent-syntax",
@@ -1883,7 +1883,7 @@ dependencies = [
 
 [[package]]
 name = "zipmount-shell"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "windows",
  "windows-core",

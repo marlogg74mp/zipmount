@@ -9,8 +9,10 @@
 
 Take **`ZipMount-Setup-<version>.exe`** from the release page and run it —
 WinFsp comes inside. 64-bit Windows 10 (version 2004 or later) or Windows 11.
-More in [Installation](#installation) · [website](https://marlogg74mp.github.io/zipmount/) ·
-on Linux and macOS, build it from source ([Linux](#linux), [macOS](#macos))
+More in [Installation](#installation) · [website](https://marlogg74mp.github.io/zipmount/)
+
+**Linux**: a static binary for x86_64 and ARM64 is in the same release — see [Linux](#linux).
+**macOS**: `brew install marlogg74mp/tap/zipmount` — see [macOS](#macos).
 
 ![ZipMount](docs/hero.jpg)
 
@@ -107,16 +109,20 @@ uses pre-generated bindings instead of running bindgen (see the comments in its
 
 ### Linux
 
-No package yet: build it from source. Mounting goes through FUSE, which every
-mainstream distribution ships as `fuse3` — the `/dev/fuse` device and the
-`fusermount3` helper. The build itself needs nothing but Rust: no libfuse, no
-`-dev` packages.
+Every release carries `zipmount-<version>-linux-x86_64.tar.gz` and
+`-linux-arm64.tar.gz`: one static binary (musl), so it runs on any
+distribution. Mounting goes through FUSE, which every mainstream distribution
+ships as `fuse3` — the `/dev/fuse` device and the `fusermount3` helper.
 
 ```
 sudo apt install fuse3            # Debian, Ubuntu; dnf or pacman elsewhere
-cargo build --release
-./target/release/zipmount mount archive.7z
+tar -xzf zipmount-<version>-linux-x86_64.tar.gz
+sudo install zipmount-<version>-linux-x86_64/zipmount /usr/local/bin/
+zipmount mount archive.7z
 ```
+
+Building it yourself needs nothing but Rust — no libfuse, no `-dev` packages:
+`cargo build --release`.
 
 Without a directory the archive is mounted on `~/ZipMount/<archive name>`,
 created for the mount and removed after it; file managers show a mount in the
@@ -134,14 +140,19 @@ them away. Started from a menu, a failure shows up as a notification.
 
 ### macOS
 
-No package yet either: build it from source with the Xcode command line tools
-(`xcode-select --install`) and Rust. Nothing else is needed — no macFUSE, no
-kernel extension, no administrator rights.
+Through Homebrew, which builds it on your Mac — so Gatekeeper, which blocks
+unsigned downloads, has nothing to object to:
 
 ```
-cargo build --release
-./target/release/zipmount mount archive.7z --open
+brew install marlogg74mp/tap/zipmount
+zipmount mount archive.7z --open
 ```
+
+Every release also carries `zipmount-<version>-macos-arm64.tar.gz` for Apple
+Silicon; it is not signed by Apple, so macOS refuses to start it until you
+allow it in System Settings → Privacy & Security. Building it yourself needs
+the Xcode command line tools (`xcode-select --install`) and Rust. Nothing else
+is needed — no macFUSE, no kernel extension, no administrator rights.
 
 macOS has no FUSE of its own, and macFUSE asks the user to lower the system's
 security on Apple Silicon. Its NFS client, though, is built in: `zipmount`
@@ -211,16 +222,19 @@ A release is a tag:
 
 ```
 # bump version in Cargo.toml [workspace.package], commit, then:
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.3.0
+git push origin v0.3.0
 ```
 
 The release workflow (`.github/workflows/release.yml`) refuses a tag that does
-not match `Cargo.toml`, runs the tests, builds both installers, attaches a
-build provenance attestation to them, and creates a **draft** release with the
-installers and `SHA256SUMS.txt`. Publishing it is one click on the release
-page — a release is public and lands in watchers' notifications, so the last
-look is human.
+not match `Cargo.toml`, runs the tests on every system, and builds the Windows
+installers, static Linux binaries for x86_64 and ARM64 and a macOS binary for
+Apple Silicon. It then attaches a build provenance attestation to all of them
+and creates one **draft** release with the files, `SHA256SUMS.txt` and notes.
+Publishing it is one click on the release page — a release is public and
+lands in watchers' notifications, so the last look is human. Started by hand
+(Actions → Release → Run workflow), it builds and packs everything and stops
+short of the release: a rehearsal before tagging.
 
 The runner signs the context menu package with a self-signed certificate it
 creates on the spot; its private key vanishes with the runner, so no key
