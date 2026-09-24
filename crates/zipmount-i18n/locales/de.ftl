@@ -377,6 +377,8 @@ err-unmount-failed = kann { $target } nicht aushängen: { $error }
 err-mount-unsupported = Einhängen ist auf diesem System noch nicht verfügbar
 doctor-fuse = FUSE:
 doctor-fuse-ok = verfügbar (/dev/fuse, fusermount3)
+mount-err-nfs = kann nicht in { $mountpoint } einhängen: { $error }
+doctor-nfs-ok = verfügbar (der NFS-Client des Systems)
 doctor-fuse-note =
     Durchsuchen und Entnehmen (ls, find, grep, verify) funktionieren auch ohne
     FUSE — es wird nur zum Einhängen gebraucht. Installieren mit dem

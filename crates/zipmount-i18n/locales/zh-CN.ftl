@@ -351,6 +351,8 @@ err-unmount-failed = 无法卸载 { $target }：{ $error }
 err-mount-unsupported = 此系统暂不支持挂载
 doctor-fuse = FUSE：
 doctor-fuse-ok = 可用（/dev/fuse、fusermount3）
+mount-err-nfs = 无法挂载到 { $mountpoint }：{ $error }
+doctor-nfs-ok = 可用（系统自带的 NFS 客户端）
 doctor-fuse-note =
     浏览、搜索和提取（ls、find、grep、verify）无需 FUSE 也能工作——
     只有挂载才需要它。可用包管理器安装：sudo apt install fuse3（Debian、

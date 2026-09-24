@@ -6,15 +6,23 @@
 //! one the file manager shows in its sidebar, and the user can write to it
 //! without root. Nor is there any bookkeeping of our own: the system's list
 //! of mounts already says what is mounted where, and from which archive.
+//!
+//! How the mount is made differs: FUSE on Linux (`linux`), a local NFS
+//! server on macOS (`macos`).
 
 #[cfg(target_os = "linux")]
 mod linux;
 #[cfg(target_os = "linux")]
 use linux as backend;
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "macos")]
+use macos as backend;
+
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
 mod unsupported;
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
 use unsupported as backend;
 
 use std::os::unix::fs::OpenOptionsExt;
@@ -103,7 +111,9 @@ fn default_mountpoint(archive: &Path) -> Result<PathBuf> {
         }
         std::fs::create_dir_all(&candidate)
             .with_context(|| t!("err-create-dir", path = candidate.display().to_string()))?;
-        return Ok(candidate);
+        // The form the system's list of mounts uses: with symbolic links
+        // resolved, as /tmp becomes /private/tmp on macOS.
+        return Ok(std::fs::canonicalize(&candidate).unwrap_or(candidate));
     }
     unreachable!("the loop above only ends by returning")
 }
@@ -153,7 +163,9 @@ fn check_mountpoint(dir: &Path) -> Result<()> {
 /// Removes a mount directory this program created in `~/ZipMount`, now
 /// that nothing is mounted on it. A directory the user chose stays.
 fn remove_if_ours(mountpoint: &Path) {
-    let ours = mount_root().is_ok_and(|root| mountpoint.parent() == Some(root.as_path()));
+    let ours = mount_root()
+        .map(|root| std::fs::canonicalize(&root).unwrap_or(root))
+        .is_ok_and(|root| mountpoint.parent() == Some(root.as_path()));
     if ours {
         // Only if empty: remove_dir refuses otherwise, which is the point.
         let _ = std::fs::remove_dir(mountpoint);

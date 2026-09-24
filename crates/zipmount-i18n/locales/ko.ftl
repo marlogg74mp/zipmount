@@ -353,6 +353,8 @@ err-unmount-failed = { $target }을(를) 마운트 해제할 수 없습니다: {
 err-mount-unsupported = 이 시스템에서는 아직 마운트를 사용할 수 없습니다
 doctor-fuse = FUSE:
 doctor-fuse-ok = 사용 가능(/dev/fuse, fusermount3)
+mount-err-nfs = { $mountpoint }에 마운트할 수 없습니다: { $error }
+doctor-nfs-ok = 사용 가능(시스템 내장 NFS 클라이언트)
 doctor-fuse-note =
     탐색, 검색, 추출(ls, find, grep, verify)은 FUSE 없이도 작동합니다
     — FUSE는 마운트할 때만 필요합니다. 패키지 관리자로 설치하세요:

@@ -377,6 +377,8 @@ err-unmount-failed = não foi possível desmontar { $target }: { $error }
 err-mount-unsupported = a montagem ainda não está disponível neste sistema
 doctor-fuse = FUSE:
 doctor-fuse-ok = disponível (/dev/fuse, fusermount3)
+mount-err-nfs = não foi possível montar em { $mountpoint }: { $error }
+doctor-nfs-ok = disponível (o cliente NFS do sistema)
 doctor-fuse-note =
     Navegar, pesquisar e extrair (ls, find, grep, verify) também funciona sem
     o FUSE — ele só é necessário para montar. Instale-o com o gerenciador de

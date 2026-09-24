@@ -379,6 +379,8 @@ err-unmount-failed = cannot unmount { $target }: { $error }
 err-mount-unsupported = mounting is not available on this system yet
 doctor-fuse = FUSE:
 doctor-fuse-ok = available (/dev/fuse, fusermount3)
+mount-err-nfs = cannot mount on { $mountpoint }: { $error }
+doctor-nfs-ok = available (the system's NFS client)
 doctor-fuse-note =
     Browsing, search and extraction (ls, find, grep, verify) work without
     FUSE too — it is only needed for mounting. Install it with the package

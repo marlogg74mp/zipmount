@@ -385,6 +385,8 @@ err-unmount-failed = не удалось размонтировать { $target 
 err-mount-unsupported = монтирование на этой системе пока недоступно
 doctor-fuse = FUSE:
 doctor-fuse-ok = доступен (/dev/fuse, fusermount3)
+mount-err-nfs = не удалось смонтировать в { $mountpoint }: { $error }
+doctor-nfs-ok = доступно (встроенный клиент NFS)
 doctor-fuse-note =
     Просмотр, поиск и извлечение (ls, find, grep, verify) работают
     и без FUSE — он нужен только для монтирования. Установить его можно

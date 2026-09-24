@@ -353,6 +353,8 @@ err-unmount-failed = { $target } をアンマウントできません：{ $error
 err-mount-unsupported = このシステムではまだマウントできません
 doctor-fuse = FUSE：
 doctor-fuse-ok = 使用可能（/dev/fuse、fusermount3）
+mount-err-nfs = { $mountpoint } にマウントできません：{ $error }
+doctor-nfs-ok = 使用可能（システム標準の NFS クライアント）
 doctor-fuse-note =
     閲覧・検索・取り出し（ls、find、grep、verify）は FUSE がなくても
     動作します — 必要なのはマウントだけです。パッケージマネージャーで

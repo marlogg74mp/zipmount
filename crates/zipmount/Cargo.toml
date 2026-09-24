@@ -31,6 +31,9 @@ ctrlc = { workspace = true, features = ["termination"] }
 [target.'cfg(target_os = "linux")'.dependencies]
 zipfs-fuse.workspace = true
 
+[target.'cfg(target_os = "macos")'.dependencies]
+zipfs-nfs.workspace = true
+
 [features]
 rar = ["zipfs-core/rar"]
 
