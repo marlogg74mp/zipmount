@@ -10,6 +10,8 @@
 //! How the mount is made differs: FUSE on Linux (`linux`), a local NFS
 //! server on macOS (`macos`).
 
+mod menu;
+
 #[cfg(target_os = "linux")]
 mod linux;
 #[cfg(target_os = "linux")]
@@ -38,15 +40,83 @@ use crate::{
     human, open_archive, print_table, read_password, report, source_text, ArchiveArgs, MountArgs,
 };
 
+/// Set for the background copy started by `mount --detach`: its errors are
+/// reported by the process that started it, which has the terminal or shows
+/// the one message.
+pub(crate) const DETACHED_VAR: &str = "ZIPMOUNT_DETACHED";
+
+/// Set by the menu items: errors are shown in a dialog or notification, as
+/// nobody reads the output of a program started from a file manager.
+pub(crate) const NOTIFY_VAR: &str = "ZIPMOUNT_NOTIFY";
+
 /// A mounted archive, as the system lists it.
 pub(crate) struct MountRecord {
     pub mountpoint: PathBuf,
     pub archive: PathBuf,
 }
 
-/// The menu is not there yet on Linux and macOS, so there is nothing to
-/// rewrite.
+/// Menu items carry their text in the language they were installed in;
+/// `zipmount language` writes them again.
 pub(crate) fn refresh_menu_texts(_language: &zipmount_i18n::Language) -> Result<()> {
+    if menu::is_installed() {
+        menu::install()?;
+        println!("{}", t!("language-menu-updated-unix"));
+    }
+    Ok(())
+}
+
+pub(crate) fn cmd_shell_install() -> Result<()> {
+    let written = menu::install()?;
+    println!("{}", t!("shell-installed-unix"));
+    for path in &written {
+        println!("  {}", path.display());
+    }
+    println!();
+    #[cfg(target_os = "macos")]
+    println!("{}", t!("shell-installed-where-macos"));
+    #[cfg(not(target_os = "macos"))]
+    println!("{}", t!("shell-installed-where-linux"));
+    println!("{}", t!("shell-remove-hint"));
+    Ok(())
+}
+
+/// Shows an error to someone who started us from a menu, with no terminal
+/// to read it in — what the message box does on Windows.
+pub(crate) fn notify_error(text: &str) {
+    #[cfg(target_os = "macos")]
+    let spawned = {
+        // An alert rather than a notification: notifications posted by
+        // osascript belong to Script Editor, and are often switched off.
+        let escaped = text.replace('\\', "\\\\").replace('"', "\\\"");
+        ProcCommand::new("osascript")
+            .args([
+                "-e",
+                &format!("display alert \"ZipMount\" message \"{escaped}\" as critical"),
+            ])
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+    };
+    #[cfg(not(target_os = "macos"))]
+    let spawned = ProcCommand::new("notify-send")
+        .args([
+            "--app-name=ZipMount",
+            "--icon=dialog-error",
+            "ZipMount",
+            text,
+        ])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn();
+    // Nothing more to be done if even that is missing.
+    let _ = spawned;
+}
+
+pub(crate) fn cmd_shell_uninstall() -> Result<()> {
+    menu::uninstall()?;
+    println!("{}", t!("shell-removed"));
     Ok(())
 }
 
@@ -63,13 +133,17 @@ pub(crate) fn cmd_mount(archive: &Path, args: MountArgs, common: &ArchiveArgs) -
         if args.open {
             open_folder(&existing.mountpoint);
         }
-        println!(
-            "{}",
-            t!(
-                "mount-already",
-                letter = existing.mountpoint.display().to_string()
-            )
-        );
+        if args.print_path {
+            println!("{}", existing.mountpoint.display());
+        } else {
+            println!(
+                "{}",
+                t!(
+                    "mount-already",
+                    letter = existing.mountpoint.display().to_string()
+                )
+            );
+        }
         return Ok(());
     }
 
@@ -234,12 +308,26 @@ fn spawn_detached(
         None => None,
     };
 
+    // The child's errors go to a file of its own, only this user can read:
+    // if it fails, the reason is there, and this process reports it. A pipe
+    // would do until the child outlives us, and then its next write would
+    // kill it.
+    let log_path = std::env::temp_dir().join(format!("zipmount-err-{}.txt", std::process::id()));
+    let log = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .mode(0o600)
+        .open(&log_path)
+        .context("cannot start the background process")?;
+
     // A process group of its own: Ctrl+C in this terminal, or closing it,
     // must not reach the background mount.
     let mut child = command
+        .env(DETACHED_VAR, "1")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stderr(log)
         .process_group(0)
         .spawn()
         .context("cannot start the background process")?;
@@ -263,18 +351,34 @@ fn spawn_detached(
         let _ = std::fs::remove_file(path);
     }
 
+    let child_said = std::fs::read_to_string(&log_path).unwrap_or_default();
+    let _ = std::fs::remove_file(&log_path);
+
     if !mounted {
         remove_if_ours(mountpoint);
-        return report(Err(anyhow::anyhow!(t!(
-            "err-mount-failed-detached",
-            path = archive.display().to_string()
-        ))));
+        // The child's own words carry the reason; they start with the same
+        // "Error: " this process is about to print.
+        let prefix = format!("{}: ", t!("error-prefix"));
+        let reason = child_said.trim();
+        let reason = reason.strip_prefix(&prefix).unwrap_or(reason);
+        return report(Err(if reason.is_empty() {
+            anyhow::anyhow!(t!(
+                "err-mount-failed-detached",
+                path = archive.display().to_string()
+            ))
+        } else {
+            anyhow::anyhow!("{reason}")
+        }));
     }
 
-    println!(
-        "{}",
-        t!("mount-done", letter = mountpoint.display().to_string())
-    );
+    if args.print_path {
+        println!("{}", mountpoint.display());
+    } else {
+        println!(
+            "{}",
+            t!("mount-done", letter = mountpoint.display().to_string())
+        );
+    }
     if args.open {
         open_folder(mountpoint);
     }

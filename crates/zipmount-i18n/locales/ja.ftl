@@ -368,3 +368,15 @@ doctor-mount-unsupported-note =
 doctor-ready-unix =
     準備完了。アーカイブをマウントするには：
         zipmount mount <archive.zip>
+
+## Linux と macOS のファイルマネージャーのメニュー
+
+menu-mount-unix = ZipMount でマウント
+help-shell-install-unix = ファイルマネージャーのコンテキストメニューに「ZipMount でマウント」を追加
+shell-installed-unix = メニュー項目をインストールしました：
+shell-installed-where-macos = Finder で：アーカイブを右クリック → クイックアクション → { menu-mount-unix }。
+shell-installed-where-linux =
+    GNOME ファイル：アーカイブを右クリック → スクリプト → { menu-mount-unix }。
+    Dolphin（KDE）：アーカイブを右クリック → { menu-mount-unix }。
+    どのファイルマネージャーでも：このアプリケーションで開く → { menu-mount-unix }。
+language-menu-updated-unix = ファイルマネージャーのメニュー項目をこの言語で書き直しました。

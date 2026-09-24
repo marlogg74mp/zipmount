@@ -392,3 +392,15 @@ doctor-mount-unsupported-note =
 doctor-ready-unix =
     Alles bereit. Ein Archiv einhängen:
         zipmount mount <archiv.zip>
+
+## Dateimanager-Menü unter Linux und macOS
+
+menu-mount-unix = Mit ZipMount einhängen
+help-shell-install-unix = „Mit ZipMount einhängen“ zum Kontextmenü des Dateimanagers hinzufügen
+shell-installed-unix = Menüeinträge installiert:
+shell-installed-where-macos = Im Finder: Rechtsklick auf ein Archiv → Schnellaktionen → { menu-mount-unix }.
+shell-installed-where-linux =
+    GNOME Dateien: Rechtsklick auf ein Archiv → Skripte → { menu-mount-unix }.
+    Dolphin (KDE): Rechtsklick auf ein Archiv → { menu-mount-unix }.
+    Jeder Dateimanager: Öffnen mit → { menu-mount-unix }.
+language-menu-updated-unix = Die Menüeinträge des Dateimanagers wurden in dieser Sprache neu geschrieben.

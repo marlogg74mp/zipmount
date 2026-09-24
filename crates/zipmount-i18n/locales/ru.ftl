@@ -400,3 +400,15 @@ doctor-mount-unsupported-note =
 doctor-ready-unix =
     Всё готово. Смонтировать архив:
         zipmount mount <архив.zip>
+
+## Меню файлового менеджера на Linux и macOS
+
+menu-mount-unix = Смонтировать в ZipMount
+help-shell-install-unix = Добавить «Смонтировать в ZipMount» в контекстное меню файлового менеджера
+shell-installed-unix = Пункты меню установлены:
+shell-installed-where-macos = В Finder: правый клик по архиву → Быстрые действия → { menu-mount-unix }.
+shell-installed-where-linux =
+    Файлы GNOME: правый клик по архиву → Сценарии → { menu-mount-unix }.
+    Dolphin (KDE): правый клик по архиву → { menu-mount-unix }.
+    Любой файловый менеджер: Открыть с помощью → { menu-mount-unix }.
+language-menu-updated-unix = Пункты меню файлового менеджера переписаны на этом языке.

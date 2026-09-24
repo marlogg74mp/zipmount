@@ -124,7 +124,13 @@ home folder in their sidebar. `zipmount unmount`, `fusermount3 -u` or Ctrl+C in
 the terminal that mounted it all take it down cleanly. `zipmount mounts` reads
 the kernel's own list, so nothing goes stale when a process is killed. The
 archive commands (`ls`, `find`, `grep`, `info`, `verify`) work exactly as on
-Windows, with or without FUSE. No file manager menu yet.
+Windows, with or without FUSE.
+
+`zipmount shell-install` adds **Mount with ZipMount** to the file managers:
+straight in Dolphin's context menu (KDE), under Scripts in GNOME Files, and
+under Open With in any file manager. The items are files in your home
+directory — no root, nothing to sign — and `zipmount shell-uninstall` takes
+them away. Started from a menu, a failure shows up as a notification.
 
 ### macOS
 
@@ -153,6 +159,12 @@ directly, is the tool (1.2 s for 5.6 GB of logs against 70 s through the
 volume). And right after a read the NFS client keeps the volume busy for a
 while; `zipmount unmount` forces the unmount then, unless one of your
 programs has a file open there, which it names instead.
+
+`zipmount shell-install` adds **Mount with ZipMount** to Finder: right-click
+an archive → Quick Actions. It is a Quick Action in `~/Library/Services`, so
+nothing needs signing; it mounts, opens the folder, and shows an alert if
+something went wrong. (The Quick Action opens the folder itself: when zipmount
+opens it, macOS asks whether zipmount may access files on network volumes.)
 
 Built and tested on macOS 26; older versions are not a target.
 
@@ -670,7 +682,8 @@ crates/zipmount/      CLI; main.rs — the commands that are the same everywhere
     mounts.rs         mount bookkeeping, background launch, stopping
     shell.rs          context menu items via the registry
     modern.rs         building, signing and installing the package for the main menu
-  unix/               mounting on a directory; linux.rs — FUSE, macos.rs — NFS
+  unix/               mounting on a directory; linux.rs — FUSE, macos.rs — NFS,
+                      menu.rs — the Finder, Dolphin and Nautilus items
 crates/zipfs-fuse/    the FUSE layer (Linux)
 crates/zipfs-nfs/     the NFS server and mount_nfs (macOS)
 crates/zipmount-shell/  the IExplorerCommand COM handler (loaded by File Explorer)
