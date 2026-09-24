@@ -1,7 +1,7 @@
 //! macOS: a local NFS server through `zipfs-nfs`, mounted by the system's
 //! own NFS client.
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command as ProcCommand;
 
 use anyhow::{Context, Result};
@@ -62,10 +62,20 @@ pub(crate) fn serve(
 }
 
 pub(crate) fn unmount(mountpoint: &Path) -> Result<()> {
-    let output = ProcCommand::new("/sbin/umount")
-        .arg(mountpoint)
-        .output()
-        .context("cannot run umount")?;
+    // Right after a program finishes reading, the NFS client holds on to
+    // the file for a moment, and umount answers "Resource busy". A file
+    // really left open stays busy; give the moment two seconds to pass.
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+    let output = loop {
+        let output = ProcCommand::new("/sbin/umount")
+            .arg(mountpoint)
+            .output()
+            .context("cannot run umount")?;
+        if output.status.success() || std::time::Instant::now() > deadline {
+            break output;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(250));
+    };
     if !output.status.success() {
         // "Resource busy" when a file is still open.
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -76,13 +86,8 @@ pub(crate) fn unmount(mountpoint: &Path) -> Result<()> {
             error = reason.to_string()
         ));
     }
-    // The server notices within half a second and exits; wait for that, so
-    // that the next command sees a clean state.
-    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(3);
-    let path = PathBuf::from(mountpoint);
-    while mounts().iter().any(|m| m.mountpoint == path) && std::time::Instant::now() < deadline {
-        std::thread::sleep(std::time::Duration::from_millis(100));
-    }
+    // The serving process sees the mount gone within half a second and exits
+    // by itself.
     Ok(())
 }
 
