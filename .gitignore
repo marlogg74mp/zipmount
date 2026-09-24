@@ -1,0 +1,6 @@
+testdata/
+target/
+__pycache__/
+*.pyc
+testdata/rar-samples/
+.wix/

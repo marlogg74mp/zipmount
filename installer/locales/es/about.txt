@@ -1,0 +1,20 @@
+ZipMount — archivos comprimidos como unidades normales de Windows
+
+Abre zip, 7z, tar y tar.gz como volúmenes de solo lectura: la navegación, la búsqueda y la copia funcionan directamente en el Explorador de archivos, mientras el archivo comprimido sigue siendo un solo archivo y se descomprime a demanda.
+
+Qué se instalará
+
+ZipMount — en "C:\Program Files\ZipMount", con la carpeta añadida al PATH y elementos en el menú contextual del Explorador de archivos.
+
+WinFsp — el controlador con el que Windows ve un archivo comprimido como una unidad. Solo se instala si todavía no está. Es un proyecto aparte; su instalador está firmado por su autor y se incluye aquí sin modificar.
+
+Al desinstalar ZipMount, el controlador WinFsp se queda: otros programas también lo usan —rclone, sshfs-win— y quitarlo con él los rompería sin aviso. Puede eliminarse por separado desde la misma lista de aplicaciones instaladas.
+
+El programa habla el idioma de Windows. Para elegir otro: zipmount language <código>
+
+Licencias
+
+ZipMount es software libre bajo la GNU GPL, versión 3 o posterior. Código fuente: https://github.com/marlogg74mp/zipmount
+
+WinFsp - Windows File System Proxy, Copyright (C) Bill Zissimopoulos
+https://github.com/winfsp/winfsp

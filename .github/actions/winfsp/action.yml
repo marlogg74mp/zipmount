@@ -1,0 +1,29 @@
+name: Install WinFsp
+description: >
+  Installs the WinFsp driver the build links against, from the same signed
+  MSI the installer bundle carries.
+
+# The winfsp crates find the WinFsp installation through the registry at build
+# time and fail without it, so every job that compiles the workspace needs
+# this. The MSI lands in target\deps, where tools\build-installer.ps1 looks for
+# it, so a release build does not download it twice.
+
+runs:
+  using: composite
+  steps:
+    - shell: pwsh
+      run: |
+        # Keep in step with $winfspVersion in tools/build-installer.ps1.
+        $version = '2.1.25156'
+        $deps = Join-Path $env:GITHUB_WORKSPACE 'target\deps'
+        New-Item -ItemType Directory $deps -Force | Out-Null
+        $msi = Join-Path $deps "winfsp-$version.msi"
+        if (-not (Test-Path $msi)) {
+          curl.exe -sSL --fail -o $msi "https://github.com/winfsp/winfsp/releases/download/v2.1/winfsp-$version.msi"
+        }
+        # The installer is signed by its author; anything else is not the
+        # file we meant to run with administrator rights.
+        $signature = Get-AuthenticodeSignature $msi
+        if ($signature.Status -ne 'Valid') { throw "WinFsp MSI signature: $($signature.Status)" }
+        $install = Start-Process msiexec.exe -ArgumentList '/i', "`"$msi`"", '/qn', '/norestart' -Wait -PassThru
+        if ($install.ExitCode -ne 0) { throw "msiexec exited with $($install.ExitCode)" }

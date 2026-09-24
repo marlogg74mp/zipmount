@@ -1,0 +1,20 @@
+ZipMount — 将归档作为普通的 Windows 驱动器
+
+以只读卷的形式打开 zip、7z、tar 和 tar.gz：可直接在文件资源管理器中浏览、搜索和复制，而归档仍是一个文件，按需解压。
+
+将安装的内容
+
+ZipMount — 安装到“C:\Program Files\ZipMount”，并将该目录加入 PATH，在文件资源管理器的上下文菜单中添加菜单项。
+
+WinFsp — 让 Windows 能把归档视为驱动器的驱动程序。仅在尚未安装时安装。它是一个独立项目，其安装程序由作者签名，原样包含在此。
+
+卸载 ZipMount 时，WinFsp 驱动程序会保留：其他程序（rclone、sshfs-win）也依赖它，将其一并移除会在毫无提示的情况下破坏这些程序。可以在同一个已安装应用列表中单独移除它。
+
+程序使用 Windows 的语言。如需选择其他语言：zipmount language <代码>
+
+许可证
+
+ZipMount 是自由软件，采用 GNU GPL 第 3 版或更高版本。源代码：https://github.com/marlogg74mp/zipmount
+
+WinFsp - Windows File System Proxy, Copyright (C) Bill Zissimopoulos
+https://github.com/winfsp/winfsp

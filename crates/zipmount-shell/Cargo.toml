@@ -1,0 +1,17 @@
+[package]
+name = "zipmount-shell"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+# File Explorer loads this into its own process, so it holds only the COM
+# wrapper: not one archive parser, no archive I/O at all. The one addition is
+# the text catalogue, for menu items in the chosen language.
+name = "zipmount_shell"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+zipmount-i18n.workspace = true
+windows.workspace = true
+windows-core.workspace = true

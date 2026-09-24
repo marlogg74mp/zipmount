@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  The bundle — the single runnable ZipMount-Setup.exe.
+
+  It exists for exactly one reason: ZipMount.msi cannot install the WinFsp
+  driver, and without the driver there is nothing to mount with. Windows
+  Installer on principle does not run another installer from inside — hence
+  the wrapper that chains them.
+
+  Two decisions worth explaining.
+
+  **WinFsp is marked Permanent.** Uninstalling ZipMount leaves the driver in
+  place. It is shared: rclone, sshfs-win and other programs run on it, and
+  taking it away would break them silently.
+
+  **WinFsp is installed only when missing** — a condition on the same registry
+  key ZipMount.msi checks. An installed driver is never touched, a newer one
+  included.
+
+  The child ZipMount.msi gets ARPSYSTEMCOMPONENT=1: otherwise "Installed apps"
+  would show two entries — the bundle and the package inside it — and people
+  would not know which one to remove.
+
+  **The window speaks the Windows display language.** The standard
+  bootstrapper looks for "<LCID>\thm.wxl" and "<LCID>\license.rtf" next to
+  itself and falls back to English. Those payloads come from
+  installer/locales, listed by tools/build-installer.ps1 in the generated
+  BundleLocalizations group.
+-->
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <Bundle
+      Name="ZipMount"
+      Version="$(Version)"
+      Manufacturer="ZipMount"
+      UpgradeCode="B9B1F098-0BB4-47E4-818E-5720BA3666B6"
+      IconSourceFile="$(IconFile)"
+      AboutUrl="https://github.com/marlogg74mp/zipmount">
+
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication
+          Theme="rtfLicense"
+          LicenseFile="$(LicenseFile)"
+          LogoFile="$(LogoFile)"
+          SuppressOptionsUI="yes" />
+      <PayloadGroupRef Id="BundleLocalizations" />
+    </BootstrapperApplication>
+
+    <!--
+      The same key ZipMount.msi checks. It lives in the 32-bit registry view —
+      that is where WinFsp writes it.
+    -->
+    <util:RegistrySearch
+        Id="FindWinFsp"
+        Root="HKLM"
+        Key="SOFTWARE\WinFsp"
+        Value="InstallDir"
+        Result="exists"
+        Variable="WinFspInstalled"
+        Bitness="always32" />
+
+    <Chain>
+      <MsiPackage
+          Id="WinFsp"
+          SourceFile="$(WinFspMsi)"
+          DisplayName="WinFsp"
+          Description="A driver for user-mode file systems"
+          InstallCondition="NOT WinFspInstalled"
+          Permanent="yes"
+          Vital="yes" />
+
+      <MsiPackage
+          Id="ZipMount"
+          SourceFile="$(ZipMountMsi)"
+          DisplayName="ZipMount"
+          Vital="yes">
+        <MsiProperty Name="ARPSYSTEMCOMPONENT" Value="1" />
+      </MsiPackage>
+    </Chain>
+  </Bundle>
+</Wix>

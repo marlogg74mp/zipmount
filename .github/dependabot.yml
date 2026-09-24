@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    ignore:
+      # winfsp-sys is vendored and patched (pre-generated bindings instead of
+      # bindgen); a new version means refreshing vendor/winfsp-sys by hand.
+      - dependency-name: winfsp
+      - dependency-name: winfsp-sys
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

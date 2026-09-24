@@ -1,0 +1,20 @@
+ZipMount — archives as ordinary Windows drives
+
+Opens zip, 7z, tar and tar.gz as read-only volumes: navigation, search and copying work right in File Explorer, while the archive stays a single file and is decompressed lazily.
+
+What will be installed
+
+ZipMount — into "C:\Program Files\ZipMount", with the directory added to PATH and items added to the File Explorer context menu.
+
+WinFsp — the driver through which Windows sees an archive as a drive. Installed only if it is not there yet. It is a separate project; its installer is signed by its author and included here unmodified.
+
+When ZipMount is uninstalled, the WinFsp driver stays: other programs run on it too — rclone, sshfs-win — and taking it away would break them without warning. It can be removed separately from the same list of installed apps.
+
+The program speaks the language of Windows. To choose another one: zipmount language <code>
+
+Licenses
+
+ZipMount is free software under the GNU GPL, version 3 or later. Source: https://github.com/marlogg74mp/zipmount
+
+WinFsp - Windows File System Proxy, Copyright (C) Bill Zissimopoulos
+https://github.com/winfsp/winfsp

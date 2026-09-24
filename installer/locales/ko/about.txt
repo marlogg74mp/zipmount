@@ -1,0 +1,20 @@
+ZipMount — 아카이브를 일반 Windows 드라이브처럼
+
+zip, 7z, tar, tar.gz를 읽기 전용 볼륨으로 엽니다. 파일 탐색기에서 바로 탐색, 검색, 복사할 수 있고, 아카이브는 하나의 파일 그대로 남아 필요할 때만 압축이 풀립니다.
+
+설치되는 항목
+
+ZipMount — "C:\Program Files\ZipMount"에 설치되며, 이 디렉터리가 PATH에 추가되고 파일 탐색기의 상황에 맞는 메뉴에 항목이 추가됩니다.
+
+WinFsp — Windows가 아카이브를 드라이브로 인식하게 해 주는 드라이버입니다. 아직 없을 때만 설치됩니다. 별도의 프로젝트이며, 그 설치 프로그램은 제작자의 서명이 있는 그대로 수정 없이 포함되어 있습니다.
+
+ZipMount를 제거해도 WinFsp 드라이버는 남습니다. rclone, sshfs-win 같은 다른 프로그램도 이 드라이버를 사용하므로, 함께 제거하면 예고 없이 그 프로그램들이 망가집니다. 같은 설치된 앱 목록에서 따로 제거할 수 있습니다.
+
+프로그램은 Windows의 언어로 표시됩니다. 다른 언어를 선택하려면: zipmount language <코드>
+
+라이선스
+
+ZipMount는 GNU GPL 버전 3 이상으로 배포되는 자유 소프트웨어입니다. 소스: https://github.com/marlogg74mp/zipmount
+
+WinFsp - Windows File System Proxy, Copyright (C) Bill Zissimopoulos
+https://github.com/winfsp/winfsp

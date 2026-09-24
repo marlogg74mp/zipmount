@@ -1,0 +1,66 @@
+[workspace]
+members = [
+    "crates/zipfs-core",
+    "crates/zipfs-mount",
+    "crates/zipmount",
+    "crates/zipmount-shell",
+    "crates/zipmount-i18n",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.2.0"
+edition = "2021"
+# GPL by fact rather than by preference: the winfsp and winfsp-sys crates are
+# plain GPLv3, so a built zipmount.exe is distributed under its terms anyway.
+license = "GPL-3.0-or-later"
+repository = "https://github.com/marlogg74mp/zipmount"
+
+[workspace.dependencies]
+zipfs-core = { path = "crates/zipfs-core" }
+zipfs-mount = { path = "crates/zipfs-mount" }
+# The CLI needs this crate for its table of classes rather than for itself:
+# the package manifest and the handler must name the very same identifiers.
+zipmount-shell = { path = "crates/zipmount-shell" }
+zipmount-i18n = { path = "crates/zipmount-i18n" }
+
+anyhow = "1"
+memmap2 = "0.9"
+libdeflater = "1.26"
+flate2 = "1"
+encoding_rs = "0.8"
+rayon = "1.12"
+rustc-hash = "2"
+sevenz-rust2 = "0.23"
+aes = "0.9"
+ctr = "0.10"
+hmac = "0.13"
+sha1 = "0.11"
+pbkdf2 = { version = "0.13", default-features = false, features = ["hmac"] }
+zeroize = { version = "1.9", features = ["zeroize_derive"] }
+rpassword = "7"
+grep-searcher = "0.1"
+grep-regex = "0.1"
+grep-matcher = "0.1"
+regex = "1"
+libz-rs-sys = "0.6"
+unrar = "0.5"
+ctrlc = "3"
+clap = { version = "4", features = ["derive", "string"] }
+winfsp = { version = "0.13", features = ["system"] }
+widestring = "1"
+fluent-bundle = "0.16"
+fluent-syntax = "0.12"
+unic-langid = "0.9"
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Globalization", "Win32_Security", "Win32_Security_Authorization", "Win32_Storage_FileSystem", "Win32_System_Threading", "Win32_System_Console", "Win32_UI_WindowsAndMessaging", "Win32_System_Registry"] }
+windows = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_Com", "Win32_System_LibraryLoader", "Win32_System_Ole", "Win32_System_Threading", "Win32_Storage_FileSystem", "Win32_UI_Shell", "Win32_UI_Shell_Common"] }
+windows-core = "0.61"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+
+[patch.crates-io]
+winfsp-sys = { path = "vendor/winfsp-sys" }

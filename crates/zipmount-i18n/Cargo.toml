@@ -1,0 +1,13 @@
+[package]
+name = "zipmount-i18n"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+fluent-bundle.workspace = true
+unic-langid.workspace = true
+windows-sys.workspace = true
+
+[dev-dependencies]
+fluent-syntax.workspace = true

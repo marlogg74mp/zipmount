@@ -1,0 +1,20 @@
+ZipMount — Archive als gewöhnliche Windows-Laufwerke
+
+Öffnet zip, 7z, tar und tar.gz als schreibgeschützte Volumes: Navigieren, Suchen und Kopieren funktionieren direkt im Datei-Explorer, während das Archiv eine einzelne Datei bleibt und nur bei Bedarf entpackt wird.
+
+Was installiert wird
+
+ZipMount — nach „C:\Program Files\ZipMount“, mit dem Ordner im PATH und Einträgen im Kontextmenü des Datei-Explorers.
+
+WinFsp — der Treiber, über den Windows ein Archiv als Laufwerk sieht. Wird nur installiert, wenn er noch fehlt. Es ist ein eigenständiges Projekt; sein Installer ist vom Autor signiert und hier unverändert enthalten.
+
+Beim Deinstallieren von ZipMount bleibt der WinFsp-Treiber erhalten: Auch andere Programme nutzen ihn — rclone, sshfs-win — und ihn mitzunehmen würde sie ohne Vorwarnung lahmlegen. Er lässt sich in derselben Liste der installierten Apps separat entfernen.
+
+Das Programm spricht die Sprache von Windows. Eine andere wählen: zipmount language <Code>
+
+Lizenzen
+
+ZipMount ist freie Software unter der GNU GPL, Version 3 oder neuer. Quellcode: https://github.com/marlogg74mp/zipmount
+
+WinFsp - Windows File System Proxy, Copyright (C) Bill Zissimopoulos
+https://github.com/winfsp/winfsp

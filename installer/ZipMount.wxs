@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  The ZipMount package.
+
+  Built by tools/build-installer.ps1, which first asks the program itself to
+  build and sign the context menu package and then puts it in here. That is
+  because building the package needs the Windows SDK, and the machine the
+  program is installed on has no SDK and should not.
+
+  The install actions are split by rights:
+    ZipMountTrust      — runs as the system, adds the certificate to the
+                         trusted ones (a machine-wide decision);
+    ZipMountRegister   — runs as the user, installs the package (registering
+                         app packages is personal; run as the system it would
+                         land on the wrong account).
+
+  Both return Return="ignore": the menu is a bonus, and failing the whole
+  program's installation over it would be wrong. Whether it came up is what
+  zipmount doctor tells.
+
+  The texts here are English only. This package's own UI is never shown in
+  the normal case — the bundle runs it silently, in its own localized window —
+  and the registry text of the drive item is rewritten per user by
+  `zipmount language`.
+-->
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+      Name="ZipMount"
+      Manufacturer="ZipMount"
+      Version="$(Version)"
+      UpgradeCode="CF8B0968-D524-47C5-85D3-9A5D7C069C66"
+      Scope="perMachine"
+      Compressed="yes">
+
+    <SummaryInformation Description="An archive as an ordinary Windows drive, read-only" />
+
+    <!--
+      Windows Installer compares only the first three fields of the version
+      and does not see the fourth — the build number. Without
+      AllowSameVersionUpgrades two builds of one version would sit side by side
+      as two products instead of one replacing the other.
+    -->
+    <MajorUpgrade
+        AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of ZipMount is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/marlogg74mp/zipmount" />
+
+    <!--
+      Without WinFsp there is nothing to mount with. Browsing, search and
+      extraction work without it, but silently installing a program half of
+      which will not work is wrong: better to say so up front.
+
+      The key lives in the 32-bit registry view — that is where WinFsp writes
+      it.
+    -->
+    <Property Id="WINFSPDIR">
+      <RegistrySearch
+          Id="FindWinFsp"
+          Root="HKLM"
+          Key="SOFTWARE\WinFsp"
+          Name="InstallDir"
+          Type="raw"
+          Bitness="always32" />
+    </Property>
+    <Launch
+        Condition="Installed OR WINFSPDIR"
+        Message="The WinFsp driver is required. Install it and try again: winget install WinFsp.WinFsp" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="ZipMount" />
+    </StandardDirectory>
+
+    <ComponentGroup Id="Program" Directory="INSTALLFOLDER">
+      <Component>
+        <File Id="ZipMountExe" Source="$(BinDir)\zipmount.exe" KeyPath="yes" />
+        <!--
+          The program is meant for the console, so its directory goes on PATH.
+          Part="last", so as not to override what the user has set up already.
+        -->
+        <Environment
+            Id="PathEntry"
+            Name="PATH"
+            Value="[INSTALLFOLDER]"
+            Part="last"
+            Action="set"
+            System="yes"
+            Permanent="no" />
+      </Component>
+
+      <!--
+        File Explorer loads the library and does not let go until a reboot, so
+        it cannot be overwritten in place: uninstalling silently leaves the old
+        file behind, and upgrading puts a new manifest on top of old code. So
+        its name carries a fingerprint of its contents: a new build simply lands
+        next to the old one, and Windows Installer removes the old one once it
+        is released. The name comes from the command that built the package —
+        the manifest inside the package refers to exactly that name.
+      -->
+      <Component>
+        <File Source="$(PackageDir)\$(LibraryName)" KeyPath="yes" />
+      </Component>
+
+      <Component>
+        <File Source="$(AssetDir)\ZipMount.ico" KeyPath="yes" />
+      </Component>
+
+      <Component>
+        <File Id="ZipMountMsix" Source="$(PackageDir)\ZipMount.msix" KeyPath="yes" />
+      </Component>
+
+      <Component>
+        <File Id="ZipMountCer" Source="$(PackageDir)\ZipMount.cer" KeyPath="yes" />
+      </Component>
+
+      <!--
+        Unmounting with a click on the drive itself. The one item the package
+        cannot declare: a drive is not among its manifest's targets.
+
+        Written to HKLM rather than HKCU for two reasons. The installation is
+        per-machine, so the item belongs to everyone who uses this machine. And
+        writing the personal hive from an installer action is unreliable: the
+        action runs in someone else's environment, and "the current user" there
+        is not who you would think. Here Windows Installer does it itself,
+        declaratively, and removes it just as neatly on uninstall.
+
+        AppliesTo restricts the item to our volumes: WinFsp reports the
+        filesystem name we set, ZipFS.
+      -->
+      <Component>
+        <RegistryKey Root="HKLM" Key="Software\Classes\Drive\shell\ZipMount.Unmount">
+          <RegistryValue Type="string" Value="Unmount (ZipMount)" KeyPath="yes" />
+          <RegistryValue Name="Icon" Type="string" Value="[INSTALLFOLDER]ZipMount.ico" />
+          <RegistryValue Name="AppliesTo" Type="string" Value="System.Volume.FileSystem:ZipFS" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Classes\Drive\shell\ZipMount.Unmount\command">
+          <RegistryValue
+              Type="string"
+              Value="&quot;[INSTALLFOLDER]zipmount.exe&quot; unmount &quot;%1&quot;" />
+        </RegistryKey>
+      </Component>
+    </ComponentGroup>
+
+    <Feature Id="Main" Title="ZipMount" Level="1">
+      <ComponentGroupRef Id="Program" />
+    </Feature>
+
+    <!-- Installing the menu -->
+    <CustomAction
+        Id="ZipMountTrust"
+        FileRef="ZipMountExe"
+        ExeCommand="shell-trust --certificate &quot;[INSTALLFOLDER]ZipMount.cer&quot;"
+        Execute="deferred"
+        Impersonate="no"
+        Return="ignore" />
+    <!--
+      The dot at the end of the path is not a typo. [INSTALLFOLDER] always ends
+      with a backslash, and inside quotes that escapes the closing quote — the
+      argument runs into the next one and the command gets garbage. The dot
+      moves the backslash away from the quote and changes nothing about the
+      path.
+    -->
+    <CustomAction
+        Id="ZipMountRegister"
+        FileRef="ZipMountExe"
+        ExeCommand="shell-register --package &quot;[INSTALLFOLDER]ZipMount.msix&quot; --external &quot;[INSTALLFOLDER].&quot;"
+        Execute="deferred"
+        Impersonate="yes"
+        Return="ignore" />
+
+    <!-- Removing it -->
+    <CustomAction
+        Id="ZipMountUnregister"
+        FileRef="ZipMountExe"
+        ExeCommand="shell-register --remove"
+        Execute="deferred"
+        Impersonate="yes"
+        Return="ignore" />
+    <CustomAction
+        Id="ZipMountUntrust"
+        FileRef="ZipMountExe"
+        ExeCommand="shell-trust --remove"
+        Execute="deferred"
+        Impersonate="no"
+        Return="ignore" />
+
+    <InstallExecuteSequence>
+      <!--
+        Removed before the files: both commands are run by zipmount.exe itself,
+        which must still be in place.
+      -->
+      <Custom Action="ZipMountUnregister" Before="RemoveFiles" Condition="REMOVE=&quot;ALL&quot;" />
+      <Custom Action="ZipMountUntrust" After="ZipMountUnregister" Condition="REMOVE=&quot;ALL&quot;" />
+
+      <Custom Action="ZipMountTrust" After="InstallFiles" Condition="NOT REMOVE" />
+      <Custom Action="ZipMountRegister" After="ZipMountTrust" Condition="NOT REMOVE" />
+    </InstallExecuteSequence>
+  </Package>
+</Wix>

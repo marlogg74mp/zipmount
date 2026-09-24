@@ -1,0 +1,20 @@
+ZipMount — アーカイブを普通の Windows ドライブとして
+
+zip、7z、tar、tar.gz を読み取り専用のボリュームとして開きます。エクスプローラーでそのまま閲覧・検索・コピーでき、アーカイブは 1 つのファイルのまま、必要な分だけ展開されます。
+
+インストールされるもの
+
+ZipMount — 「C:\Program Files\ZipMount」にインストールされ、そのディレクトリが PATH に追加され、エクスプローラーのコンテキストメニューに項目が加わります。
+
+WinFsp — Windows がアーカイブをドライブとして扱うためのドライバーです。まだ入っていない場合にのみインストールされます。これは別のプロジェクトで、そのインストーラーは作者による署名付きのまま、変更せずに同梱しています。
+
+ZipMount をアンインストールしても WinFsp ドライバーは残ります。rclone や sshfs-win など他のプログラムもこれを使っており、一緒に削除すると予告なくそれらを壊してしまうためです。同じインストール済みアプリの一覧から個別に削除できます。
+
+プログラムは Windows の言語で表示されます。別の言語を選ぶには：zipmount language <コード>
+
+ライセンス
+
+ZipMount は GNU GPL バージョン 3 以降のもとで提供されるフリーソフトウェアです。ソース：https://github.com/marlogg74mp/zipmount
+
+WinFsp - Windows File System Proxy, Copyright (C) Bill Zissimopoulos
+https://github.com/winfsp/winfsp

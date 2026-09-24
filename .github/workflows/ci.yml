@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: ${{ matrix.name }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Official build
+            features: ""
+          # Never distributed, but it has to keep compiling and passing: people
+          # build it for their own use.
+          - name: With rar
+            features: --features zipmount/rar
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.name }}
+
+      - uses: ./.github/actions/winfsp
+
+      - name: Formatting
+        if: matrix.features == ''
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets ${{ matrix.features }} -- -D warnings
+
+      # Among the tests: every translation must carry exactly the English set
+      # of messages, and every id the code asks for must exist.
+      - name: Tests
+        run: cargo test --workspace ${{ matrix.features }}

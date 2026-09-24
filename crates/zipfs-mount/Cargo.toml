@@ -1,0 +1,14 @@
+[package]
+name = "zipfs-mount"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+zipfs-core.workspace = true
+zipmount-i18n.workspace = true
+anyhow.workspace = true
+winfsp.workspace = true
+winfsp-sys = "0.12"
+windows-sys.workspace = true
+widestring.workspace = true

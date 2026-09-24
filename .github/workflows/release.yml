@@ -1,0 +1,72 @@
+name: Release
+
+# Pushing a tag vX.Y.Z builds both installers from that commit and puts them
+# into a draft release, with SHA256SUMS.txt and a build provenance
+# attestation. Publishing the draft stays a manual click.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write      # create the draft release
+  id-token: write      # sign the attestation
+  attestations: write  # store it
+
+jobs:
+  installers:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The installer version's fourth field is the commit count, and a
+          # shallow clone would make it 1.
+          fetch-depth: 0
+
+      - name: The tag matches Cargo.toml
+        shell: pwsh
+        run: |
+          $manifest = Get-Content Cargo.toml -Raw
+          $match = [regex]::Match($manifest, '(?ms)^\[workspace\.package\].*?^version\s*=\s*"(\d+\.\d+\.\d+)"')
+          if (-not $match.Success) { throw 'no version in [workspace.package] in Cargo.toml' }
+          $expected = "v$($match.Groups[1].Value)"
+          if ('${{ github.ref_name }}' -ne $expected) {
+            throw "tag ${{ github.ref_name }} does not match Cargo.toml, which says $expected"
+          }
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: ./.github/actions/winfsp
+
+      - name: Tests
+        run: cargo test --workspace
+
+      # The version matters: without one the current branch is fetched, which
+      # WiX 4 cannot load. Extensions go to .wix in the repository root, where
+      # the build script expects them.
+      - name: Install WiX
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 4.0.5
+          $wix = Join-Path $env:USERPROFILE '.dotnet\tools\wix.exe'
+          & $wix extension add WixToolset.Bal.wixext/4.0.5
+          & $wix extension add WixToolset.Util.wixext/4.0.5
+
+      # The context menu package is signed with a self-signed certificate made
+      # on this runner; its private key disappears with the runner, so no key
+      # outlives the release it signed.
+      - name: Build the installers
+        shell: pwsh
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tools\build-installer.ps1
+
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            target/ZipMount-Setup.exe
+            target/ZipMount.msi
+
+      - name: Draft the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tools\publish-release.ps1 -Repository ${{ github.repository }}

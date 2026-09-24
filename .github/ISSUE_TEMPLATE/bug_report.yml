@@ -1,0 +1,33 @@
+name: Bug report
+description: Something reads wrong, crashes, or does not mount
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A security problem (a crafted archive that escapes the volume, crashes the mount, reads out of bounds)? Please report it privately instead — see SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `zipmount --version`
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: The command you ran, what you expected, what you got. Paste the error text as is.
+    validations:
+      required: true
+  - type: textarea
+    id: archive
+    attributes:
+      label: The archive
+      description: |
+        Format, size, number of files, what made it (7-Zip, WinRAR, tar…). Attach it if it is small and has nothing private in it — a reproducing archive is worth more than any description. `zipmount info <archive>` output helps too.
+  - type: textarea
+    id: doctor
+    attributes:
+      label: zipmount doctor
+      description: For mounting and context menu problems, paste the output of `zipmount doctor`.
+      render: text

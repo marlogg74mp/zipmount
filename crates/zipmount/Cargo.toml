@@ -1,0 +1,27 @@
+[package]
+name = "zipmount"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "zipmount"
+path = "src/main.rs"
+
+[dependencies]
+zipfs-core.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+zipfs-mount.workspace = true
+zipmount-shell.workspace = true
+zipmount-i18n.workspace = true
+ctrlc.workspace = true
+rpassword.workspace = true
+windows-sys.workspace = true
+windows.workspace = true
+
+[features]
+rar = ["zipfs-core/rar"]
+
+[build-dependencies]
+winfsp.workspace = true
