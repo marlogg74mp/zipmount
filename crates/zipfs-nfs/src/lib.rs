@@ -20,7 +20,8 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use async_trait::async_trait;
 use nfsserve::nfs::{
-    fattr3, fileid3, filename3, ftype3, nfspath3, nfsstat3, nfstime3, sattr3, specdata3,
+    fattr3, fileid3, filename3, fsinfo3, ftype3, nfspath3, nfsstat3, nfstime3, post_op_attr,
+    sattr3, specdata3, FSF_HOMOGENEOUS,
 };
 use nfsserve::vfs::{DirEntry, NFSFileSystem, ReadDirResult, VFSCapabilities};
 use zipfs_core::{Archive, ContentCache, FileHandle};
@@ -30,6 +31,12 @@ const FALLBACK_SECS: u32 = 315_532_800;
 
 /// Seconds between 1601-01-01 (FILETIME, what the core stores) and 1970-01-01.
 const FILETIME_TO_UNIX_SECS: u64 = 11_644_473_600;
+
+/// The read size offered to the client. It takes the preferred size, not the
+/// maximum: nfsserve's default prefers 124 KB, and on macOS that alone made
+/// reading an archive through the mount several times slower, every request
+/// costing a round trip however little it carried.
+const READ_SIZE: u32 = 1024 * 1024;
 
 /// Readers kept between requests. NFS has no open and close: every read
 /// names the file afresh, and reopening would throw away what a reader has
@@ -332,6 +339,28 @@ impl NFSFileSystem for ZipNfs {
     async fn readlink(&self, _id: fileid3) -> Result<nfspath3, nfsstat3> {
         // There are no symbolic links in the tree.
         Err(nfsstat3::NFS3ERR_INVAL)
+    }
+
+    async fn fsinfo(&self, root_fileid: fileid3) -> Result<fsinfo3, nfsstat3> {
+        let root = self.inner.node_of(root_fileid)?;
+        Ok(fsinfo3 {
+            obj_attributes: post_op_attr::attributes(self.inner.attr(root)),
+            rtmax: READ_SIZE,
+            rtpref: READ_SIZE,
+            rtmult: 4096,
+            // Nothing is ever written; the client still wants sane numbers.
+            wtmax: READ_SIZE,
+            wtpref: READ_SIZE,
+            wtmult: 4096,
+            dtpref: 64 * 1024,
+            maxfilesize: u64::MAX,
+            time_delta: nfstime3 {
+                seconds: 0,
+                nseconds: 100,
+            },
+            // No links of either kind, and times cannot be set.
+            properties: FSF_HOMOGENEOUS,
+        })
     }
 }
 

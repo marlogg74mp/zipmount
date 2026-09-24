@@ -130,11 +130,15 @@ impl Mount {
         })?;
 
         // mount_nfs talks to the server while the runtime's threads serve it.
-        // soft and a short timeout: if this process dies, programs reading
-        // the volume get an error instead of hanging. locallocks: file locks
-        // stay on this Mac, which is all a read-only volume needs.
+        // soft: if this process dies, programs reading the volume get an
+        // error instead of hanging. But not too soon — the first read from a
+        // 7z solid block waits while the whole block expands, which can take
+        // seconds; 5 s a try, five tries. locallocks: file locks stay on this
+        // Mac, which is all a read-only volume needs. rsize, readahead and
+        // dsize: big requests, few round trips (see READ_SIZE).
         let options = format!(
-            "port={port},mountport={port},vers=3,tcp,rdonly,soft,intr,timeo=10,retrans=3,locallocks,actimeo=60"
+            "port={port},mountport={port},vers=3,tcp,rdonly,{}",
+            "soft,intr,timeo=50,retrans=5,locallocks,actimeo=60,rsize=1048576,readahead=16,dsize=65536"
         );
         let source = format!(
             "{SOURCE_PREFIX}/{}",
