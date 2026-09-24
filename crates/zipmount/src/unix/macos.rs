@@ -62,22 +62,47 @@ pub(crate) fn serve(
 }
 
 pub(crate) fn unmount(mountpoint: &Path) -> Result<()> {
-    // Right after a program finishes reading, the NFS client holds on to
-    // the file for a moment, and umount answers "Resource busy". A file
-    // really left open stays busy; give the moment five seconds to pass.
-    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
-    let output = loop {
-        let output = ProcCommand::new("/sbin/umount")
+    let umount = |force: bool| {
+        let mut command = ProcCommand::new("/sbin/umount");
+        if force {
+            command.arg("-f");
+        }
+        command
             .arg(mountpoint)
             .output()
-            .context("cannot run umount")?;
+            .context("cannot run umount")
+    };
+
+    // Right after a program finishes reading, the NFS client holds on to
+    // the file for a moment, and umount answers "Resource busy"; give that
+    // moment five seconds to pass.
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+    let mut output = loop {
+        let output = umount(false)?;
         if output.status.success() || std::time::Instant::now() > deadline {
             break output;
         }
         std::thread::sleep(std::time::Duration::from_millis(250));
     };
+
+    // Still busy. If one of the user's programs has a file open there, say
+    // which and leave it be. If none has, what holds the volume is a system
+    // service looking it over (Spotlight and the like, which lsof does not
+    // show to a user): forcing is safe then — the volume is read-only, so
+    // nothing unwritten can be lost.
     if !output.status.success() {
-        // "Resource busy" when a file is still open.
+        let users = processes_using(mountpoint);
+        if users.is_empty() {
+            output = umount(true)?;
+        } else {
+            anyhow::bail!(t!(
+                "err-unmount-failed",
+                target = mountpoint.display().to_string(),
+                error = users.join(", ")
+            ));
+        }
+    }
+    if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let reason = stderr.trim().trim_start_matches("umount: ");
         anyhow::bail!(t!(
@@ -89,6 +114,32 @@ pub(crate) fn unmount(mountpoint: &Path) -> Result<()> {
     // The serving process sees the mount gone within half a second and exits
     // by itself.
     Ok(())
+}
+
+/// This user's processes with a file open on the volume, as "Preview (812)".
+fn processes_using(mountpoint: &Path) -> Vec<String> {
+    // +f: everything open on the filesystem mounted there. -F pc: one field
+    // per line, "p<pid>" then "c<command>".
+    let Ok(output) = ProcCommand::new("/usr/sbin/lsof")
+        .args(["-F", "pc", "+f", "--"])
+        .arg(mountpoint)
+        .output()
+    else {
+        return Vec::new();
+    };
+    let mut found = Vec::new();
+    let mut pid = "";
+    for line in std::str::from_utf8(&output.stdout)
+        .unwrap_or_default()
+        .lines()
+    {
+        if let Some(p) = line.strip_prefix('p') {
+            pid = p;
+        } else if let Some(command) = line.strip_prefix('c') {
+            found.push(format!("{command} ({pid})"));
+        }
+    }
+    found
 }
 
 pub(crate) fn doctor_label() -> String {

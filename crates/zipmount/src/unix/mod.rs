@@ -172,6 +172,15 @@ fn remove_if_ours(mountpoint: &Path) {
     }
 }
 
+/// The directory's identity (device and inode), to tell it from one of the
+/// same name created later.
+fn dir_id(dir: &Path) -> Option<(u64, u64)> {
+    use std::os::unix::fs::MetadataExt;
+    std::fs::symlink_metadata(dir)
+        .ok()
+        .map(|m| (m.dev(), m.ino()))
+}
+
 fn open_folder(dir: &Path) {
     let opener = if cfg!(target_os = "macos") {
         "open"
@@ -292,6 +301,7 @@ fn run_mount(
     let stats = a.tree().stats();
     let parse_time = started.elapsed();
     let where_ = mountpoint.display().to_string();
+    let dir_before = dir_id(mountpoint);
 
     let served = backend::serve(
         a,
@@ -324,7 +334,12 @@ fn run_mount(
         },
     );
 
-    remove_if_ours(mountpoint);
+    // `zipmount unmount` removes the directory at once; this is for an
+    // unmount from elsewhere (Eject in Finder, fusermount3 -u). A directory
+    // of the same name created since belongs to a newer mount: leave it.
+    if dir_id(mountpoint) == dir_before {
+        remove_if_ours(mountpoint);
+    }
     served?;
     println!("{}", t!("mount-finished"));
     Ok(())
@@ -345,6 +360,10 @@ pub(crate) fn cmd_unmount(target: &str) -> Result<()> {
     };
 
     backend::unmount(&record.mountpoint)?;
+    // Right away, rather than leaving it to the serving process: that one
+    // notices the unmount a moment later, by which time a new mount may be
+    // reusing the directory.
+    remove_if_ours(&record.mountpoint);
     println!(
         "{}",
         t!(
