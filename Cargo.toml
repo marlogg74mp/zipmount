@@ -2,6 +2,7 @@
 members = [
     "crates/zipfs-core",
     "crates/zipfs-mount",
+    "crates/zipfs-fuse",
     "crates/zipmount",
     "crates/zipmount-shell",
     "crates/zipmount-i18n",
@@ -19,6 +20,7 @@ repository = "https://github.com/marlogg74mp/zipmount"
 [workspace.dependencies]
 zipfs-core = { path = "crates/zipfs-core" }
 zipfs-mount = { path = "crates/zipfs-mount" }
+zipfs-fuse = { path = "crates/zipfs-fuse" }
 # The CLI needs this crate for its table of classes rather than for itself:
 # the package manifest and the handler must name the very same identifiers.
 zipmount-shell = { path = "crates/zipmount-shell" }
@@ -48,6 +50,10 @@ unrar = "0.5"
 ctrlc = "3"
 clap = { version = "4", features = ["derive", "string"] }
 winfsp = { version = "0.13", features = ["system"] }
+# Linux mounting. No default features: it mounts through the fusermount3
+# binary rather than linking libfuse, so building needs no -dev package.
+fuser = "0.18"
+libc = "0.2"
 widestring = "1"
 fluent-bundle = "0.16"
 fluent-syntax = "0.12"

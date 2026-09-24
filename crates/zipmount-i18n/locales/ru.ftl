@@ -362,3 +362,38 @@ doctor-reason = Причина: { $error }
 doctor-no-winfsp-note =
     Просмотр, поиск и извлечение (ls, find, grep, verify) работают
     и без WinFsp — драйвер нужен только для монтирования диска.
+
+## Linux и macOS: без букв дисков и без Проводника
+
+help-about-unix = Архив как папка: просмотр, поиск и извлечение без распаковки
+help-notice-unix = Лицензия GPL-3.0-or-later, исходники: https://github.com/marlogg74mp/zipmount
+help-prefix-unix = Префикс пути в выводе, например "/home/me/ZipMount/logs/"
+help-mount-mountpoint-unix = Пустой каталог для монтирования; если не указан — ~/ZipMount/<имя архива>
+help-mount-open-unix = Открыть смонтированную папку в файловом менеджере
+help-unmount-unix = Размонтировать архив
+help-unmount-target-unix = Каталог монтирования или путь к архиву
+help-language-code-unix = Код языка (en, ru, zh-CN, ja, ko, pt-BR, es, de) или auto — следовать языку системы
+language-source-system = по языку системы
+language-hint-unix = Выбрать: zipmount language <код>. Снова следовать языку системы: zipmount language auto
+language-follows-system = Язык снова следует языку системы: { $name } ({ $code }).
+err-language-unknown-unix = неизвестный язык «{ $code }». Доступны: { $available }; или auto — следовать языку системы
+mount-err-fuse = не удалось смонтировать в { $mountpoint }: { $error }
+err-no-fuse = FUSE здесь недоступен: нет { $missing }. Установите пакет fuse3, например:  sudo apt install fuse3
+err-mountpoint-not-dir = { $path } — не каталог
+err-mountpoint-not-empty = { $path } не пуст; монтировать можно только в пустой каталог
+err-unmount-failed = не удалось размонтировать { $target }: { $error }
+err-mount-unsupported = монтирование на этой системе пока недоступно
+doctor-fuse = FUSE:
+doctor-fuse-ok = доступен (/dev/fuse, fusermount3)
+doctor-fuse-note =
+    Просмотр, поиск и извлечение (ls, find, grep, verify) работают
+    и без FUSE — он нужен только для монтирования. Установить его можно
+    менеджером пакетов: sudo apt install fuse3 (Debian, Ubuntu),
+    sudo dnf install fuse3 (Fedora), sudo pacman -S fuse3 (Arch).
+doctor-mount = Монтирование:
+doctor-mount-unsupported-note =
+    Просмотр, поиск и извлечение (ls, find, grep, verify) на этой системе
+    работают; монтирование здесь пока недоступно.
+doctor-ready-unix =
+    Всё готово. Смонтировать архив:
+        zipmount mount <архив.zip>

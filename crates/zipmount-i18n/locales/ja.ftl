@@ -330,3 +330,38 @@ doctor-reason = 原因：{ $error }
 doctor-no-winfsp-note =
     閲覧・検索・取り出し（ls、find、grep、verify）は WinFsp がなくても
     動作します — ドライバーが必要なのはドライブのマウントだけです。
+
+## Linux と macOS：ドライブ文字もエクスプローラーもない環境
+
+help-about-unix = アーカイブをフォルダーとして：展開せずに閲覧・検索・取り出し
+help-notice-unix = ライセンス GPL-3.0-or-later、ソース：https://github.com/marlogg74mp/zipmount
+help-prefix-unix = 出力するパスの接頭辞、例："/home/me/ZipMount/logs/"
+help-mount-mountpoint-unix = マウント先の空のディレクトリ。省略時は ~/ZipMount/<アーカイブ名>
+help-mount-open-unix = マウントしたフォルダーをファイルマネージャーで開く
+help-unmount-unix = アーカイブをアンマウント
+help-unmount-target-unix = マウント先のディレクトリまたはアーカイブのパス
+help-language-code-unix = 言語コード（en、ru、zh-CN、ja、ko、pt-BR、es、de）、またはシステムに従う場合は auto
+language-source-system = システムの言語
+language-hint-unix = 選択：zipmount language <コード>。再びシステムに従う：zipmount language auto
+language-follows-system = 言語は再びシステムに従います：{ $name }（{ $code }）。
+err-language-unknown-unix = 不明な言語「{ $code }」。使用可能：{ $available }；またはシステムに従う auto
+mount-err-fuse = { $mountpoint } にマウントできません：{ $error }
+err-no-fuse = ここでは FUSE を使用できません：{ $missing } がありません。fuse3 パッケージをインストールしてください。例：  sudo apt install fuse3
+err-mountpoint-not-dir = { $path } はディレクトリではありません
+err-mountpoint-not-empty = { $path } は空ではありません。空のディレクトリにマウントしてください
+err-unmount-failed = { $target } をアンマウントできません：{ $error }
+err-mount-unsupported = このシステムではまだマウントできません
+doctor-fuse = FUSE：
+doctor-fuse-ok = 使用可能（/dev/fuse、fusermount3）
+doctor-fuse-note =
+    閲覧・検索・取り出し（ls、find、grep、verify）は FUSE がなくても
+    動作します — 必要なのはマウントだけです。パッケージマネージャーで
+    インストールできます：sudo apt install fuse3（Debian、Ubuntu）、
+    sudo dnf install fuse3（Fedora）、sudo pacman -S fuse3（Arch）。
+doctor-mount = マウント：
+doctor-mount-unsupported-note =
+    閲覧・検索・取り出し（ls、find、grep、verify）はこのシステムで
+    動作しますが、マウントはまだ使用できません。
+doctor-ready-unix =
+    準備完了。アーカイブをマウントするには：
+        zipmount mount <archive.zip>

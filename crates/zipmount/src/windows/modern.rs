@@ -37,7 +37,7 @@ use windows::Win32::System::Com::{
 use windows::Win32::UI::Shell::IExplorerCommand;
 use zipmount_i18n::t;
 
-use crate::shell;
+use super::shell;
 
 /// The package name and the certificate subject must match `Publisher` in
 /// the manifest, or deployment rejects the signature.
@@ -45,7 +45,7 @@ const PACKAGE_NAME: &str = "ZipMount";
 const PUBLISHER: &str = "CN=ZipMount";
 
 /// Icon for the menu items; `IExplorerCommand::GetIcon` returns its path.
-const ICON: &[u8] = include_bytes!("../assets/ZipMount.ico");
+const ICON: &[u8] = include_bytes!("../../assets/ZipMount.ico");
 
 /// Tiles that go into the package.
 ///
@@ -64,7 +64,7 @@ macro_rules! unplated {
                 ".png"
             ),
             include_bytes!(concat!(
-                "../assets/Square44x44Logo.altform-unplated_targetsize-",
+                "../../assets/Square44x44Logo.altform-unplated_targetsize-",
                 $size,
                 ".png"
             )) as &[u8],
@@ -75,13 +75,16 @@ macro_rules! unplated {
 const ASSETS: &[(&str, &[u8])] = &[
     (
         "Square44x44Logo.png",
-        include_bytes!("../assets/Square44x44Logo.png"),
+        include_bytes!("../../assets/Square44x44Logo.png"),
     ),
     (
         "Square150x150Logo.png",
-        include_bytes!("../assets/Square150x150Logo.png"),
+        include_bytes!("../../assets/Square150x150Logo.png"),
     ),
-    ("StoreLogo.png", include_bytes!("../assets/StoreLogo.png")),
+    (
+        "StoreLogo.png",
+        include_bytes!("../../assets/StoreLogo.png"),
+    ),
     unplated!("16"),
     unplated!("24"),
     unplated!("32"),

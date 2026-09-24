@@ -251,6 +251,33 @@ fn setting_round_trips_through_the_registry() {
     }
 }
 
+#[cfg(not(windows))]
+#[test]
+fn setting_round_trips_through_a_file() {
+    // A directory of its own, so the test never touches the real choice.
+    let name = format!("ZipMount-test-{}", std::process::id());
+    let key = format!("Software\\{name}");
+    assert_eq!(read_setting(&key, "Language"), None);
+    write_setting(&key, "Language", "zh-CN").expect("write");
+    assert_eq!(read_setting(&key, "Language").as_deref(), Some("zh-CN"));
+    delete_setting(&key, "Language").expect("delete");
+    assert_eq!(read_setting(&key, "Language"), None);
+    // Deleting what is not there is not an error: "auto" twice in a row.
+    delete_setting(&key, "Language").expect("second delete");
+
+    let home = std::path::PathBuf::from(std::env::var_os("HOME").expect("HOME"));
+    let dir = if cfg!(target_os = "macos") {
+        home.join("Library/Application Support").join(&name)
+    } else {
+        std::env::var_os("XDG_CONFIG_HOME")
+            .map(std::path::PathBuf::from)
+            .filter(|p| p.is_absolute())
+            .unwrap_or_else(|| home.join(".config"))
+            .join(name.to_lowercase())
+    };
+    std::fs::remove_dir(&dir).expect("the test directory, now empty");
+}
+
 #[test]
 fn switching_changes_the_language_at_once() {
     let before = language();

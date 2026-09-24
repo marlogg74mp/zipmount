@@ -354,3 +354,38 @@ doctor-reason = Motivo: { $error }
 doctor-no-winfsp-note =
     Navegar, pesquisar e extrair (ls, find, grep, verify) também funciona sem
     o WinFsp — o driver só é necessário para montar uma unidade.
+
+## Linux e macOS: sem letras de unidade e sem Explorador de Arquivos
+
+help-about-unix = Um arquivo compactado como pasta: navegue, pesquise e extraia sem descompactar
+help-notice-unix = Licença GPL-3.0-or-later, código-fonte: https://github.com/marlogg74mp/zipmount
+help-prefix-unix = Prefixo dos caminhos na saída, por exemplo "/home/me/ZipMount/logs/"
+help-mount-mountpoint-unix = Um diretório vazio onde montar; ~/ZipMount/<nome do arquivo> se omitido
+help-mount-open-unix = Abrir a pasta montada no gerenciador de arquivos
+help-unmount-unix = Desmontar um arquivo compactado
+help-unmount-target-unix = O diretório de montagem ou o caminho do arquivo compactado
+help-language-code-unix = Código do idioma (en, ru, zh-CN, ja, ko, pt-BR, es, de), ou auto para seguir o sistema
+language-source-system = o idioma do sistema
+language-hint-unix = Escolha um: zipmount language <código>. Voltar a seguir o sistema: zipmount language auto
+language-follows-system = O idioma volta a seguir o sistema: { $name } ({ $code }).
+err-language-unknown-unix = idioma desconhecido "{ $code }". Disponíveis: { $available }; ou auto para seguir o sistema
+mount-err-fuse = não foi possível montar em { $mountpoint }: { $error }
+err-no-fuse = O FUSE não está disponível aqui: falta { $missing }. Instale o pacote fuse3, por exemplo:  sudo apt install fuse3
+err-mountpoint-not-dir = { $path } não é um diretório
+err-mountpoint-not-empty = { $path } não está vazio; monte em um diretório vazio
+err-unmount-failed = não foi possível desmontar { $target }: { $error }
+err-mount-unsupported = a montagem ainda não está disponível neste sistema
+doctor-fuse = FUSE:
+doctor-fuse-ok = disponível (/dev/fuse, fusermount3)
+doctor-fuse-note =
+    Navegar, pesquisar e extrair (ls, find, grep, verify) também funciona sem
+    o FUSE — ele só é necessário para montar. Instale-o com o gerenciador de
+    pacotes: sudo apt install fuse3 (Debian, Ubuntu), sudo dnf install fuse3
+    (Fedora), sudo pacman -S fuse3 (Arch).
+doctor-mount = Montagem:
+doctor-mount-unsupported-note =
+    Navegar, pesquisar e extrair (ls, find, grep, verify) funciona neste
+    sistema; a montagem ainda não está disponível aqui.
+doctor-ready-unix =
+    Tudo pronto. Monte um arquivo compactado:
+        zipmount mount <arquivo.zip>

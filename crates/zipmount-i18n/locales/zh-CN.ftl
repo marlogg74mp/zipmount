@@ -328,3 +328,37 @@ doctor-reason = 原因：{ $error }
 doctor-no-winfsp-note =
     浏览、搜索和提取（ls、find、grep、verify）无需 WinFsp 也能工作——
     只有挂载驱动器才需要该驱动程序。
+
+## Linux 和 macOS：没有驱动器号，也没有文件资源管理器
+
+help-about-unix = 将归档作为文件夹：无需解压即可浏览、搜索和提取
+help-notice-unix = 许可证 GPL-3.0-or-later，源代码：https://github.com/marlogg74mp/zipmount
+help-prefix-unix = 输出路径的前缀，例如 "/home/me/ZipMount/logs/"
+help-mount-mountpoint-unix = 用于挂载的空目录；省略时为 ~/ZipMount/<归档名>
+help-mount-open-unix = 在文件管理器中打开挂载的文件夹
+help-unmount-unix = 卸载归档
+help-unmount-target-unix = 挂载目录或归档路径
+help-language-code-unix = 语言代码（en、ru、zh-CN、ja、ko、pt-BR、es、de），或 auto 以跟随系统
+language-source-system = 系统语言
+language-hint-unix = 选择：zipmount language <代码>。重新跟随系统：zipmount language auto
+language-follows-system = 语言重新跟随系统：{ $name }（{ $code }）。
+err-language-unknown-unix = 未知语言“{ $code }”。可用：{ $available }；或 auto 以跟随系统
+mount-err-fuse = 无法挂载到 { $mountpoint }：{ $error }
+err-no-fuse = 此处无法使用 FUSE：缺少 { $missing }。请安装 fuse3 软件包，例如：  sudo apt install fuse3
+err-mountpoint-not-dir = { $path } 不是目录
+err-mountpoint-not-empty = { $path } 不是空目录；只能挂载到空目录
+err-unmount-failed = 无法卸载 { $target }：{ $error }
+err-mount-unsupported = 此系统暂不支持挂载
+doctor-fuse = FUSE：
+doctor-fuse-ok = 可用（/dev/fuse、fusermount3）
+doctor-fuse-note =
+    浏览、搜索和提取（ls、find、grep、verify）无需 FUSE 也能工作——
+    只有挂载才需要它。可用包管理器安装：sudo apt install fuse3（Debian、
+    Ubuntu）、sudo dnf install fuse3（Fedora）、sudo pacman -S fuse3（Arch）。
+doctor-mount = 挂载：
+doctor-mount-unsupported-note =
+    浏览、搜索和提取（ls、find、grep、verify）在此系统上可以使用；
+    挂载暂不可用。
+doctor-ready-unix =
+    一切就绪。挂载归档：
+        zipmount mount <archive.zip>

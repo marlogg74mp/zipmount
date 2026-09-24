@@ -1,4 +1,7 @@
 //! Mounting an archive as a Windows volume through WinFsp.
+//!
+//! Windows only; `zipfs-fuse` does the same job on Linux.
+#![cfg(windows)]
 
 mod fs;
 mod security;

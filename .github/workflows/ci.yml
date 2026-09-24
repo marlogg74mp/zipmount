@@ -15,17 +15,27 @@ concurrency:
 jobs:
   check:
     name: ${{ matrix.name }}
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: Official build
+          - name: Windows
+            os: windows-latest
             features: ""
           # Never distributed, but it has to keep compiling and passing: people
           # build it for their own use.
-          - name: With rar
+          - name: Windows, with rar
+            os: windows-latest
             features: --features zipmount/rar
+          # Mounting through FUSE, which neither the build nor the tests need.
+          - name: Linux
+            os: ubuntu-latest
+            features: ""
+          # No mounting yet, but every archive command and the translations.
+          - name: macOS
+            os: macos-latest
+            features: ""
     steps:
       - uses: actions/checkout@v7
 
@@ -38,9 +48,10 @@ jobs:
           key: ${{ matrix.name }}
 
       - uses: ./.github/actions/winfsp
+        if: runner.os == 'Windows'
 
       - name: Formatting
-        if: matrix.features == ''
+        if: matrix.name == 'Windows'
         run: cargo fmt --all -- --check
 
       - name: Clippy

@@ -10,6 +10,7 @@
 //! knows nothing about archives. Its job is to show an item and start the
 //! `zipmount.exe` lying next to it. Everything heavy happens in a separate
 //! process, not inside File Explorer.
+#![cfg(windows)]
 
 mod command;
 mod host;

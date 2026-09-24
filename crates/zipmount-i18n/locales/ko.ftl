@@ -330,3 +330,38 @@ doctor-reason = 원인: { $error }
 doctor-no-winfsp-note =
     탐색, 검색, 추출(ls, find, grep, verify)은 WinFsp 없이도 작동합니다
     — 드라이버는 드라이브를 마운트할 때만 필요합니다.
+
+## Linux와 macOS: 드라이브 문자도 파일 탐색기도 없는 환경
+
+help-about-unix = 아카이브를 폴더로: 압축을 풀지 않고 탐색, 검색, 추출
+help-notice-unix = 라이선스 GPL-3.0-or-later, 소스: https://github.com/marlogg74mp/zipmount
+help-prefix-unix = 출력 경로의 접두사, 예: "/home/me/ZipMount/logs/"
+help-mount-mountpoint-unix = 마운트할 빈 디렉터리. 생략하면 ~/ZipMount/<아카이브 이름>
+help-mount-open-unix = 마운트한 폴더를 파일 관리자에서 열기
+help-unmount-unix = 아카이브 마운트 해제
+help-unmount-target-unix = 마운트 디렉터리 또는 아카이브 경로
+help-language-code-unix = 언어 코드(en, ru, zh-CN, ja, ko, pt-BR, es, de), 또는 시스템을 따르려면 auto
+language-source-system = 시스템 언어
+language-hint-unix = 선택: zipmount language <코드>. 다시 시스템 따르기: zipmount language auto
+language-follows-system = 언어가 다시 시스템을 따릅니다: { $name }({ $code }).
+err-language-unknown-unix = 알 수 없는 언어 "{ $code }". 사용 가능: { $available }; 또는 시스템을 따르는 auto
+mount-err-fuse = { $mountpoint }에 마운트할 수 없습니다: { $error }
+err-no-fuse = 여기서는 FUSE를 사용할 수 없습니다: { $missing }이(가) 없습니다. fuse3 패키지를 설치하세요. 예:  sudo apt install fuse3
+err-mountpoint-not-dir = { $path }은(는) 디렉터리가 아닙니다
+err-mountpoint-not-empty = { $path }이(가) 비어 있지 않습니다. 빈 디렉터리에 마운트하세요
+err-unmount-failed = { $target }을(를) 마운트 해제할 수 없습니다: { $error }
+err-mount-unsupported = 이 시스템에서는 아직 마운트를 사용할 수 없습니다
+doctor-fuse = FUSE:
+doctor-fuse-ok = 사용 가능(/dev/fuse, fusermount3)
+doctor-fuse-note =
+    탐색, 검색, 추출(ls, find, grep, verify)은 FUSE 없이도 작동합니다
+    — FUSE는 마운트할 때만 필요합니다. 패키지 관리자로 설치하세요:
+    sudo apt install fuse3(Debian, Ubuntu), sudo dnf install fuse3(Fedora),
+    sudo pacman -S fuse3(Arch).
+doctor-mount = 마운트:
+doctor-mount-unsupported-note =
+    탐색, 검색, 추출(ls, find, grep, verify)은 이 시스템에서 작동하지만
+    마운트는 아직 사용할 수 없습니다.
+doctor-ready-unix =
+    준비 완료. 아카이브 마운트:
+        zipmount mount <archive.zip>

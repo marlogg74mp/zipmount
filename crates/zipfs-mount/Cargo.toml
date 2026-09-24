@@ -4,7 +4,8 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
-[dependencies]
+# WinFsp exists only on Windows; elsewhere this crate compiles to nothing.
+[target.'cfg(windows)'.dependencies]
 zipfs-core.workspace = true
 zipmount-i18n.workspace = true
 anyhow.workspace = true
