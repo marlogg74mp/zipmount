@@ -133,13 +133,17 @@ pub(crate) fn cmd_mount(archive: &Path, args: MountArgs, common: &ArchiveArgs) -
         if args.open {
             open_folder(&existing.mountpoint);
         }
-        println!(
-            "{}",
-            t!(
-                "mount-already",
-                letter = existing.mountpoint.display().to_string()
-            )
-        );
+        if args.print_path {
+            println!("{}", existing.mountpoint.display());
+        } else {
+            println!(
+                "{}",
+                t!(
+                    "mount-already",
+                    letter = existing.mountpoint.display().to_string()
+                )
+            );
+        }
         return Ok(());
     }
 
@@ -367,10 +371,14 @@ fn spawn_detached(
         }));
     }
 
-    println!(
-        "{}",
-        t!("mount-done", letter = mountpoint.display().to_string())
-    );
+    if args.print_path {
+        println!("{}", mountpoint.display());
+    } else {
+        println!(
+            "{}",
+            t!("mount-done", letter = mountpoint.display().to_string())
+        );
+    }
     if args.open {
         open_folder(mountpoint);
     }

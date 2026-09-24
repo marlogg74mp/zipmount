@@ -73,6 +73,12 @@ enum Command {
         open: bool,
         #[arg(long)]
         label: Option<String>,
+        /// Print nothing but the mount point, for a menu script to open.
+        ///
+        /// On macOS the menu opens the folder itself: when zipmount opens
+        /// it, the system asks whether zipmount may access network volumes.
+        #[arg(long, hide = true)]
+        print_path: bool,
         /// For 7z this is the solid block cache budget, and it matters more:
         /// a block can run to gigabytes and is expanded whole.
         #[arg(long, default_value_t = 512)]
@@ -404,6 +410,7 @@ fn run() -> Result<()> {
             detach,
             open,
             label,
+            print_path,
             cache_mb,
             common,
         } => platform::cmd_mount(
@@ -413,6 +420,7 @@ fn run() -> Result<()> {
                 detach,
                 open,
                 label,
+                print_path,
                 cache_mb,
             },
             &common,
@@ -899,6 +907,8 @@ struct MountArgs {
     /// The volume label File Explorer shows; a FUSE mount has none.
     #[cfg_attr(unix, allow(dead_code))]
     label: Option<String>,
+    #[cfg_attr(windows, allow(dead_code))]
+    print_path: bool,
     cache_mb: usize,
 }
 

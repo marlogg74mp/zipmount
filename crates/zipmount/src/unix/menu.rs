@@ -288,10 +288,14 @@ mod platform {
             label = xml_escape(label)
         );
 
-        // `|| true`: zipmount shows its own error; a failing script would
-        // make Automator add a second, vaguer dialog.
+        // The script opens the folder itself, rather than --open: a volume
+        // opened by zipmount makes macOS ask whether zipmount may access
+        // network volumes. It ends with success whatever happened: zipmount
+        // shows its own error, and a failing script would make Automator
+        // add a second, vaguer dialog.
         let script = format!(
-            "export {NOTIFY_VAR}=1\nfor f in \"$@\"; do\n\t{} mount --detach --open \"$f\" || true\ndone",
+            "export {NOTIFY_VAR}=1\nfor f in \"$@\"; do\n\t\
+             mp=$({} mount --detach --print-path \"$f\") && open \"$mp\"\ndone\nexit 0",
             shell_quote(program)
         );
         let workflow = format!(
