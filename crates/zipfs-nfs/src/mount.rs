@@ -1,7 +1,7 @@
 //! Serving and mounting on macOS.
 //!
 //! The export is named after the archive's own path, so the system's list of
-//! mounts shows `127.0.0.1:/Users/me/logs.7z` as the source: which archive is
+//! mounts shows `localhost:/Users/me/logs.7z` as the source: which archive is
 //! mounted where comes straight from the kernel, with no list of our own to
 //! go stale.
 
@@ -18,8 +18,10 @@ use zipmount_i18n::t;
 
 use crate::ZipNfs;
 
-/// Mounts from this host: ours, as `127.0.0.1:/<archive path>`.
-const SOURCE_PREFIX: &str = "127.0.0.1:";
+/// Mounts from this host: ours, as `localhost:/<archive path>`. The host
+/// name is what Finder shows the volume under in its sidebar, and
+/// "localhost" says more there than "127.0.0.1".
+const SOURCE_PREFIX: &str = "localhost:";
 
 /// Mount settings.
 pub struct MountOptions {
@@ -36,7 +38,7 @@ pub struct MountRecord {
     pub archive: PathBuf,
 }
 
-/// What `getfsstat` lists as an NFS mount from 127.0.0.1.
+/// What `getfsstat` lists as an NFS mount from localhost.
 pub fn mounts() -> Vec<MountRecord> {
     // SAFETY: a null buffer asks only for the count.
     let count = unsafe { libc::getfsstat(std::ptr::null_mut(), 0, libc::MNT_NOWAIT) };
@@ -157,9 +159,11 @@ impl Mount {
         // 7z solid block waits while the whole block expands, which can take
         // seconds; 5 s a try, five tries. locallocks: file locks stay on this
         // Mac, which is all a read-only volume needs. rsize, readahead and
-        // dsize: big requests, few round trips (see READ_SIZE).
+        // dsize: big requests, few round trips (see READ_SIZE). inet: the
+        // server listens on IPv4 only, and "localhost" would otherwise be
+        // tried over IPv6 first, which costs most of a second.
         let options = format!(
-            "port={port},mountport={port},vers=3,tcp,rdonly,{}",
+            "port={port},mountport={port},vers=3,tcp,inet,rdonly,{}",
             "soft,intr,timeo=50,retrans=5,locallocks,actimeo=60,rsize=1048576,readahead=16,dsize=65536"
         );
         let source = format!(
