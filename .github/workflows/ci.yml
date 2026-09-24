@@ -25,7 +25,7 @@ jobs:
             features: ""
           # Never distributed, but it has to keep compiling and passing: people
           # build it for their own use.
-          - name: Windows, with rar
+          - name: Windows with rar
             os: windows-latest
             features: --features zipmount/rar
           # Mounting through FUSE, which neither the build nor the tests need.
