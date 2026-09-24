@@ -6,15 +6,23 @@
 //! one the file manager shows in its sidebar, and the user can write to it
 //! without root. Nor is there any bookkeeping of our own: the system's list
 //! of mounts already says what is mounted where, and from which archive.
+//!
+//! How the mount is made differs: FUSE on Linux (`linux`), a local NFS
+//! server on macOS (`macos`).
 
 #[cfg(target_os = "linux")]
 mod linux;
 #[cfg(target_os = "linux")]
 use linux as backend;
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "macos")]
+use macos as backend;
+
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
 mod unsupported;
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
 use unsupported as backend;
 
 use std::os::unix::fs::OpenOptionsExt;
@@ -103,7 +111,9 @@ fn default_mountpoint(archive: &Path) -> Result<PathBuf> {
         }
         std::fs::create_dir_all(&candidate)
             .with_context(|| t!("err-create-dir", path = candidate.display().to_string()))?;
-        return Ok(candidate);
+        // The form the system's list of mounts uses: with symbolic links
+        // resolved, as /tmp becomes /private/tmp on macOS.
+        return Ok(std::fs::canonicalize(&candidate).unwrap_or(candidate));
     }
     unreachable!("the loop above only ends by returning")
 }
@@ -153,11 +163,22 @@ fn check_mountpoint(dir: &Path) -> Result<()> {
 /// Removes a mount directory this program created in `~/ZipMount`, now
 /// that nothing is mounted on it. A directory the user chose stays.
 fn remove_if_ours(mountpoint: &Path) {
-    let ours = mount_root().is_ok_and(|root| mountpoint.parent() == Some(root.as_path()));
+    let ours = mount_root()
+        .map(|root| std::fs::canonicalize(&root).unwrap_or(root))
+        .is_ok_and(|root| mountpoint.parent() == Some(root.as_path()));
     if ours {
         // Only if empty: remove_dir refuses otherwise, which is the point.
         let _ = std::fs::remove_dir(mountpoint);
     }
+}
+
+/// The directory's identity (device and inode), to tell it from one of the
+/// same name created later.
+fn dir_id(dir: &Path) -> Option<(u64, u64)> {
+    use std::os::unix::fs::MetadataExt;
+    std::fs::symlink_metadata(dir)
+        .ok()
+        .map(|m| (m.dev(), m.ino()))
 }
 
 fn open_folder(dir: &Path) {
@@ -280,6 +301,7 @@ fn run_mount(
     let stats = a.tree().stats();
     let parse_time = started.elapsed();
     let where_ = mountpoint.display().to_string();
+    let dir_before = dir_id(mountpoint);
 
     let served = backend::serve(
         a,
@@ -312,7 +334,12 @@ fn run_mount(
         },
     );
 
-    remove_if_ours(mountpoint);
+    // `zipmount unmount` removes the directory at once; this is for an
+    // unmount from elsewhere (Eject in Finder, fusermount3 -u). A directory
+    // of the same name created since belongs to a newer mount: leave it.
+    if dir_id(mountpoint) == dir_before {
+        remove_if_ours(mountpoint);
+    }
     served?;
     println!("{}", t!("mount-finished"));
     Ok(())
@@ -333,6 +360,10 @@ pub(crate) fn cmd_unmount(target: &str) -> Result<()> {
     };
 
     backend::unmount(&record.mountpoint)?;
+    // Right away, rather than leaving it to the serving process: that one
+    // notices the unmount a moment later, by which time a new mount may be
+    // reusing the directory.
+    remove_if_ours(&record.mountpoint);
     println!(
         "{}",
         t!(

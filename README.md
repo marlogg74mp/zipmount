@@ -10,7 +10,7 @@
 Take **`ZipMount-Setup-<version>.exe`** from the release page and run it —
 WinFsp comes inside. 64-bit Windows 10 (version 2004 or later) or Windows 11.
 More in [Installation](#installation) · [website](https://marlogg74mp.github.io/zipmount/) ·
-on Linux, [build it from source](#linux)
+on Linux and macOS, build it from source ([Linux](#linux), [macOS](#macos))
 
 ![ZipMount](docs/hero.jpg)
 
@@ -126,7 +126,35 @@ the kernel's own list, so nothing goes stale when a process is killed. The
 archive commands (`ls`, `find`, `grep`, `info`, `verify`) work exactly as on
 Windows, with or without FUSE. No file manager menu yet.
 
-On macOS the archive commands build and work too; mounting is the next step.
+### macOS
+
+No package yet either: build it from source with the Xcode command line tools
+(`xcode-select --install`) and Rust. Nothing else is needed — no macFUSE, no
+kernel extension, no administrator rights.
+
+```
+cargo build --release
+./target/release/zipmount mount archive.7z --open
+```
+
+macOS has no FUSE of its own, and macFUSE asks the user to lower the system's
+security on Apple Silicon. Its NFS client, though, is built in: `zipmount`
+serves the archive as an NFSv3 export on this Mac only, bound to 127.0.0.1,
+and the system mounts it with `mount_nfs` like any network share. Finder shows
+it in its sidebar under **localhost**, with the archive's name as the volume;
+Eject there unmounts it, as do `zipmount unmount` and Ctrl+C. The same
+`~/ZipMount/<archive name>` directory is used as on Linux, and `zipmount
+mounts` reads the system's own list of mounts.
+
+Two things differ from the other systems. Reading through the volume runs at
+about 200 MB/s on an M-series Mac — NFS costs a round trip per request, however
+local — so for searching content `zipmount grep`, which reads the archive
+directly, is the tool (1.2 s for 5.6 GB of logs against 70 s through the
+volume). And right after a read the NFS client keeps the volume busy for a
+while; `zipmount unmount` forces the unmount then, unless one of your
+programs has a file open there, which it names instead.
+
+Built and tested on macOS 26; older versions are not a target.
 
 ### Building the installers
 
@@ -642,8 +670,9 @@ crates/zipmount/      CLI; main.rs — the commands that are the same everywhere
     mounts.rs         mount bookkeeping, background launch, stopping
     shell.rs          context menu items via the registry
     modern.rs         building, signing and installing the package for the main menu
-  unix/               mounting on a directory; linux.rs — FUSE, the kernel's list of mounts
+  unix/               mounting on a directory; linux.rs — FUSE, macos.rs — NFS
 crates/zipfs-fuse/    the FUSE layer (Linux)
+crates/zipfs-nfs/     the NFS server and mount_nfs (macOS)
 crates/zipmount-shell/  the IExplorerCommand COM handler (loaded by File Explorer)
 crates/zipmount-i18n/ language choice and every user-facing text
   locales/*.ftl       the translations, one Fluent file per language

@@ -374,9 +374,12 @@ err-no-fuse = O FUSE não está disponível aqui: falta { $missing }. Instale o 
 err-mountpoint-not-dir = { $path } não é um diretório
 err-mountpoint-not-empty = { $path } não está vazio; monte em um diretório vazio
 err-unmount-failed = não foi possível desmontar { $target }: { $error }
+err-unmount-in-use = não foi possível desmontar { $target }: há arquivos abertos em { $programs }. Feche-os e tente de novo
 err-mount-unsupported = a montagem ainda não está disponível neste sistema
 doctor-fuse = FUSE:
 doctor-fuse-ok = disponível (/dev/fuse, fusermount3)
+mount-err-nfs = não foi possível montar em { $mountpoint }: { $error }
+doctor-nfs-ok = disponível (o cliente NFS do sistema)
 doctor-fuse-note =
     Navegar, pesquisar e extrair (ls, find, grep, verify) também funciona sem
     o FUSE — ele só é necessário para montar. Instale-o com o gerenciador de

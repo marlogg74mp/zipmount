@@ -3,6 +3,7 @@ members = [
     "crates/zipfs-core",
     "crates/zipfs-mount",
     "crates/zipfs-fuse",
+    "crates/zipfs-nfs",
     "crates/zipmount",
     "crates/zipmount-shell",
     "crates/zipmount-i18n",
@@ -21,6 +22,7 @@ repository = "https://github.com/marlogg74mp/zipmount"
 zipfs-core = { path = "crates/zipfs-core" }
 zipfs-mount = { path = "crates/zipfs-mount" }
 zipfs-fuse = { path = "crates/zipfs-fuse" }
+zipfs-nfs = { path = "crates/zipfs-nfs" }
 # The CLI needs this crate for its table of classes rather than for itself:
 # the package manifest and the handler must name the very same identifiers.
 zipmount-shell = { path = "crates/zipmount-shell" }
@@ -54,6 +56,11 @@ winfsp = { version = "0.13", features = ["system"] }
 # binary rather than linking libfuse, so building needs no -dev package.
 fuser = "0.18"
 libc = "0.2"
+# macOS mounting: an NFSv3 server on 127.0.0.1 that the system's own NFS
+# client mounts, so no kernel extension and no macFUSE.
+nfsserve = "0.11"
+async-trait = "0.1"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "sync", "macros"] }
 widestring = "1"
 fluent-bundle = "0.16"
 fluent-syntax = "0.12"

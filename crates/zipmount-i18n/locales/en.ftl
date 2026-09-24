@@ -376,9 +376,12 @@ err-no-fuse = FUSE is not available here: { $missing } is missing. Install the f
 err-mountpoint-not-dir = { $path } is not a directory
 err-mountpoint-not-empty = { $path } is not empty; mount on an empty directory
 err-unmount-failed = cannot unmount { $target }: { $error }
+err-unmount-in-use = cannot unmount { $target }: files on it are open in { $programs }. Close them and try again
 err-mount-unsupported = mounting is not available on this system yet
 doctor-fuse = FUSE:
 doctor-fuse-ok = available (/dev/fuse, fusermount3)
+mount-err-nfs = cannot mount on { $mountpoint }: { $error }
+doctor-nfs-ok = available (the system's NFS client)
 doctor-fuse-note =
     Browsing, search and extraction (ls, find, grep, verify) work without
     FUSE too — it is only needed for mounting. Install it with the package

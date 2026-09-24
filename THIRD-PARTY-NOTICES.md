@@ -46,6 +46,16 @@ is what makes a built `zipmount.exe` a GPLv3 work.
 FUSE itself is part of the Linux kernel; mounting uses the system's
 `fusermount3` helper, which is not bundled.
 
+## macOS
+
+| Component | Used for | License |
+|---|---|---|
+| [nfsserve](https://github.com/huggingface/nfsserve) | the local NFS server | BSD-3-Clause |
+| [tokio](https://tokio.rs) | its runtime | MIT |
+| [async-trait](https://github.com/dtolnay/async-trait) | its filesystem interface | MIT OR Apache-2.0 |
+
+The NFS client and `mount_nfs` are part of macOS.
+
 ## RAR (not in official builds)
 
 RAR support uses RARLAB's UnRAR source code through the

@@ -1,0 +1,16 @@
+[package]
+name = "zipfs-nfs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# The filesystem builds on any Unix, so its tests run on Linux too; mounting
+# it (mount_nfs) is macOS only. Elsewhere this crate compiles to nothing.
+[target.'cfg(unix)'.dependencies]
+zipfs-core.workspace = true
+zipmount-i18n.workspace = true
+anyhow.workspace = true
+nfsserve.workspace = true
+async-trait.workspace = true
+tokio.workspace = true
+libc.workspace = true

@@ -350,9 +350,12 @@ err-no-fuse = ここでは FUSE を使用できません：{ $missing } があ�
 err-mountpoint-not-dir = { $path } はディレクトリではありません
 err-mountpoint-not-empty = { $path } は空ではありません。空のディレクトリにマウントしてください
 err-unmount-failed = { $target } をアンマウントできません：{ $error }
+err-unmount-in-use = { $target } をアンマウントできません：{ $programs } がファイルを開いています。閉じてから再試行してください
 err-mount-unsupported = このシステムではまだマウントできません
 doctor-fuse = FUSE：
 doctor-fuse-ok = 使用可能（/dev/fuse、fusermount3）
+mount-err-nfs = { $mountpoint } にマウントできません：{ $error }
+doctor-nfs-ok = 使用可能（システム標準の NFS クライアント）
 doctor-fuse-note =
     閲覧・検索・取り出し（ls、find、grep、verify）は FUSE がなくても
     動作します — 必要なのはマウントだけです。パッケージマネージャーで
