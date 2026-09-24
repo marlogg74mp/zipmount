@@ -74,8 +74,30 @@ pub fn mounts() -> Vec<MountRecord> {
         .collect()
 }
 
+/// Whether our NFS mount is still on `mountpoint`, asked of the path itself.
+///
+/// Not from the list getfsstat returns: while an unmount is being tried —
+/// and refused as busy — the mount drops out of that list for a moment, and
+/// a server that took that for an unmount left the volume without anyone to
+/// serve it.
 fn is_mounted(mountpoint: &Path) -> bool {
-    mounts().iter().any(|m| m.mountpoint == mountpoint)
+    let Ok(path) = std::ffi::CString::new(mountpoint.as_os_str().as_encoded_bytes()) else {
+        return false;
+    };
+    // SAFETY: statfs fills the zeroed struct for a NUL-terminated path.
+    let mut stat: libc::statfs = unsafe { std::mem::zeroed() };
+    if unsafe { libc::statfs(path.as_ptr(), &mut stat) } != 0 {
+        return false;
+    }
+    let text = |field: &[libc::c_char]| {
+        // SAFETY: the kernel NUL-terminates these fixed-size fields.
+        unsafe { CStr::from_ptr(field.as_ptr()) }
+            .to_bytes()
+            .to_vec()
+    };
+    text(&stat.f_fstypename) == b"nfs"
+        && text(&stat.f_mntonname) == mountpoint.as_os_str().as_encoded_bytes()
+        && text(&stat.f_mntfromname).starts_with(SOURCE_PREFIX.as_bytes())
 }
 
 /// Unmounts from another thread — a signal handler's, typically.
@@ -174,10 +196,18 @@ impl Mount {
     /// Serves until the directory is unmounted — by [`Unmounter::unmount`],
     /// or from outside: `umount`, or Eject in Finder.
     pub fn run(self) -> Result<()> {
-        // The server runs on the runtime's threads; this one only watches the
-        // system's list of mounts.
-        while is_mounted(&self.mountpoint) {
+        // The server runs on the runtime's threads; this one only watches
+        // the mount point. Gone three times in a row, half a second apart, means
+        // gone: stopping while the volume is still there would leave it
+        // with no one to answer, every read failing after its timeouts.
+        let mut absent = 0;
+        while absent < 3 {
             std::thread::sleep(Duration::from_millis(500));
+            if is_mounted(&self.mountpoint) {
+                absent = 0;
+            } else {
+                absent += 1;
+            }
         }
         self.runtime.shutdown_timeout(Duration::from_secs(2));
         Ok(())

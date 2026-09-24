@@ -64,8 +64,8 @@ pub(crate) fn serve(
 pub(crate) fn unmount(mountpoint: &Path) -> Result<()> {
     // Right after a program finishes reading, the NFS client holds on to
     // the file for a moment, and umount answers "Resource busy". A file
-    // really left open stays busy; give the moment two seconds to pass.
-    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+    // really left open stays busy; give the moment five seconds to pass.
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
     let output = loop {
         let output = ProcCommand::new("/sbin/umount")
             .arg(mountpoint)
